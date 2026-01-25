@@ -1,0 +1,16 @@
+# Runtime/derived
+.opencode/logs/
+.opencode/run/
+
+# IDE
+.vscode/
+.idea/
+\.vs/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs/pids
+*.log
+*.pid
