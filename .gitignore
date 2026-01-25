@@ -1,11 +1,13 @@
 # Runtime/derived
+.opencode/node_modules/
+.opencode/xdg/
 .opencode/logs/
 .opencode/run/
 
 # IDE
 .vscode/
 .idea/
-\.vs/
+.vs/
 
 # OS
 .DS_Store

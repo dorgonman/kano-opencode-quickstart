@@ -39,7 +39,7 @@ Options:
   --bg                Run OpenCode in background (pid: .opencode/run/opencode-serve.pid).
   --service           Keep the launcher process alive (for systemd/Windows service usage).
   --tailnet           Expose localhost:<port> via 'tailscale serve' within your tailnet.
-                      Implies --bg and requires --host 127.0.0.1/localhost.
+                      Implies --bg (except with --service) and requires --host 127.0.0.1/localhost.
   --ts-https <port>   Tailscale HTTPS port (default: 8443).
 
   --stop              Stop background OpenCode server and reset tailscale serve.
@@ -262,12 +262,22 @@ start_opencode() {
 
   cd "$REPO_ROOT"
 
+  if [[ "$SERVICE" == "1" ]]; then
+    # Service mode: start opencode as a normal child process (no nohup) so the service stop can kill it.
+    opencode serve --hostname "$HOST" --port "$PORT" \
+      > "${LOG_DIR}/opencode-stdout.log" \
+      2> "${LOG_DIR}/opencode-stderr.log" &
+    echo $! > "$OPENCODE_PID_FILE"
+    echo "OK: opencode server started for service (pid=$(cat \"$OPENCODE_PID_FILE\"))" >&2
+    return 0
+  fi
+
   if [[ "$BG" == "1" ]]; then
     nohup opencode serve --hostname "$HOST" --port "$PORT" \
       > "${LOG_DIR}/opencode-stdout.log" \
       2> "${LOG_DIR}/opencode-stderr.log" &
     echo $! > "$OPENCODE_PID_FILE"
-    echo "OK: opencode server started in background (pid=$(cat "$OPENCODE_PID_FILE"))" >&2
+    echo "OK: opencode server started in background (pid=$(cat \"$OPENCODE_PID_FILE\"))" >&2
   else
     exec opencode serve --hostname "$HOST" --port "$PORT"
   fi
@@ -398,7 +408,7 @@ if [[ "$TAILNET" == "1" ]]; then
     echo "ERROR: --tailnet requires --host 127.0.0.1/localhost (got: $HOST)" >&2
     exit 2
   fi
-  if [[ "$BG" != "1" ]]; then
+  if [[ "$SERVICE" != "1" ]] && [[ "$BG" != "1" ]]; then
     BG="1"
     echo "INFO: --tailnet implies --bg (running server in background)." >&2
   fi

@@ -1,15 +1,19 @@
 param(
-  [Parameter(Mandatory = $true)]
-  [ValidateSet("install", "uninstall", "start", "stop", "status", "logs")]
-  [string]$Action,
+  [ValidateSet("bootstrap", "install", "uninstall", "start", "stop", "status", "logs", "diagnose")]
+  [string]$Action = "bootstrap",
 
   [string]$Name = "opencode-tailnet",
-  [int]$Port = 4096,
-  [int]$TsHttpsPort = 8443,
+  [int]$Port = 5096,
+  [int]$TsHttpsPort = 9443,
   [int]$Tail = 200
 )
 
 $ErrorActionPreference = "Stop"
+
+function Test-Command {
+  param([Parameter(Mandatory = $true)][string]$CommandName)
+  return $null -ne (Get-Command $CommandName -ErrorAction SilentlyContinue)
+}
 
 function Get-RepoRoot {
   $scriptDir = Split-Path -Parent $PSCommandPath
@@ -40,12 +44,42 @@ function Get-DirOfCommand {
   return (Split-Path -Parent $cmd.Source)
 }
 
-function Assert-Admin {
-  $isAdmin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()
+function Is-Admin {
+  return ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()
   ).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
-  if (-not $isAdmin) {
-    throw "Administrator privileges required (Windows service install/remove). Re-run PowerShell as Admin."
-  }
+}
+
+function Relaunch-Elevated {
+  param([Parameter(Mandatory = $true)][string]$Action)
+
+  $args = @(
+    "-NoProfile",
+    "-ExecutionPolicy",
+    "Bypass",
+    "-File",
+    $PSCommandPath,
+    "-Action",
+    $Action,
+    "-Name",
+    $Name,
+    "-Port",
+    $Port,
+    "-TsHttpsPort",
+    $TsHttpsPort,
+    "-Tail",
+    $Tail
+  )
+
+  Start-Process -Verb RunAs -FilePath "powershell.exe" -ArgumentList $args
+}
+
+function Ensure-Admin {
+  param([Parameter(Mandatory = $true)][string]$Action)
+
+  if (Is-Admin) { return }
+  Write-Host "Administrator privileges required for '$Action'. Relaunching elevated..." -ForegroundColor Yellow
+  Relaunch-Elevated -Action $Action
+  exit 0
 }
 
 function Test-ServiceExists {
@@ -66,20 +100,55 @@ function Remove-ServiceBestEffort {
   }
 }
 
-$repoRoot = Get-RepoRoot
-$bashPath = Get-BashPath
-$nssmPath = Get-NssmPath
+function Get-EnvBlock {
+  param([Parameter(Mandatory = $true)][string]$RepoRoot)
 
-$startTailnetSh = Join-Path $repoRoot "scripts\\start-server-tailnet.sh"
-if (-not (Test-Path $startTailnetSh)) {
-  throw "Missing script: $startTailnetSh"
+  $repoOpencodeDir = Join-Path $RepoRoot ".opencode"
+  $xdgConfig = Join-Path $RepoRoot ".opencode\xdg\config"
+  $xdgData = Join-Path $RepoRoot ".opencode\xdg\data"
+  $xdgCache = Join-Path $RepoRoot ".opencode\xdg\cache"
+
+  $repoBunInstall = if ($env:BUN_INSTALL) { $env:BUN_INSTALL } else { Join-Path $env:USERPROFILE ".bun" }
+  $repoBunBin = Join-Path $repoBunInstall "bin"
+
+  $opencodeDir = Get-DirOfCommand -CommandName "opencode"
+  $tailscaleDir = Get-DirOfCommand -CommandName "tailscale"
+  $bunDir = Get-DirOfCommand -CommandName "bun"
+
+  $extraDirs = @($repoBunBin, $opencodeDir, $tailscaleDir, $bunDir) | Where-Object { $_ -and ($_ -ne "") } | Select-Object -Unique
+  $path = ($env:PATH + ";" + ($extraDirs -join ";"))
+
+  # Force repo-local writable directories for service accounts (SYSTEM).
+  return @(
+    ("PATH={0}" -f $path),
+    ("HOME={0}" -f $RepoRoot),
+    ("BUN_INSTALL={0}" -f $repoBunInstall),
+    ("OPENCODE_REPO_LOCAL=1"),
+    ("OPENCODE_HOME={0}" -f $repoOpencodeDir),
+    ("XDG_CONFIG_HOME={0}" -f $xdgConfig),
+    ("XDG_DATA_HOME={0}" -f $xdgData),
+    ("XDG_CACHE_HOME={0}" -f $xdgCache)
+  ) -join "`n"
 }
 
-if ($Action -in @("install", "uninstall", "start", "stop")) {
-  Assert-Admin
-}
+function Install-Service {
+  param(
+    [Parameter(Mandatory = $true)][string]$RepoRoot,
+    [Parameter(Mandatory = $true)][string]$ServiceName,
+    [Parameter(Mandatory = $true)][int]$Port,
+    [Parameter(Mandatory = $true)][int]$TsHttpsPort
+  )
 
-if ($Action -eq "install") {
+  Ensure-Admin -Action "install"
+
+  $bashPath = Get-BashPath
+  $nssmPath = Get-NssmPath
+
+    $opencodeServerSh = Join-Path $RepoRoot "scripts\opencode-server.sh"
+  if (-not (Test-Path $opencodeServerSh)) {
+    throw "Missing script: $opencodeServerSh"
+  }
+
   try {
     $portInUse = Get-NetTCPConnection -ErrorAction SilentlyContinue | Where-Object { $_.LocalPort -eq $Port }
     if ($portInUse) {
@@ -87,98 +156,156 @@ if ($Action -eq "install") {
     }
   } catch { }
 
-  if (Test-ServiceExists -ServiceName $Name) {
-    Remove-ServiceBestEffort -ServiceName $Name
+  if (Test-ServiceExists -ServiceName $ServiceName) {
+    Remove-ServiceBestEffort -ServiceName $ServiceName
     Start-Sleep -Seconds 1
   }
 
-  $bashCommand = ("./scripts/start-server-tailnet.sh --service --port {0} --ts-https {1}" -f $Port, $TsHttpsPort)
+    $bashCommand = ("./scripts/opencode-server.sh --service --tailnet --host 127.0.0.1 --auth none --port {0} --ts-https {1}" -f $Port, $TsHttpsPort)
 
   if ($null -ne $nssmPath) {
-    & $nssmPath install $Name $bashPath "-lc" ('"{0}"' -f $bashCommand)
+    & $nssmPath install $ServiceName $bashPath "-lc" ('"{0}"' -f $bashCommand)
     if ($LASTEXITCODE -ne 0) { throw "nssm install failed (exit=$LASTEXITCODE)" }
 
-    & $nssmPath set $Name AppDirectory $repoRoot | Out-Null
-    & $nssmPath set $Name DisplayName $Name | Out-Null
-    & $nssmPath set $Name Start SERVICE_AUTO_START | Out-Null
+    & $nssmPath set $ServiceName AppDirectory $RepoRoot | Out-Null
+    & $nssmPath set $ServiceName DisplayName $ServiceName | Out-Null
+    & $nssmPath set $ServiceName Start SERVICE_AUTO_START | Out-Null
 
-    $repoOpencodeDir = Join-Path $repoRoot ".opencode"
-    $repoBunInstall = if ($env:BUN_INSTALL) { $env:BUN_INSTALL } else { Join-Path $env:USERPROFILE ".bun" }
-    $repoBunBin = Join-Path $repoBunInstall "bin"
+    $envBlock = Get-EnvBlock -RepoRoot $RepoRoot
+    & $nssmPath set $ServiceName AppEnvironmentExtra $envBlock | Out-Null
 
-    $opencodeDir = Get-DirOfCommand -CommandName "opencode"
-    $tailscaleDir = Get-DirOfCommand -CommandName "tailscale"
-    $bunDir = Get-DirOfCommand -CommandName "bun"
-
-    $extraDirs = @($repoBunBin, $opencodeDir, $tailscaleDir, $bunDir) | Where-Object { $_ -and ($_ -ne "") } | Select-Object -Unique
-    $path = ($env:PATH + ";" + ($extraDirs -join ";"))
-
-    $envBlock = @(
-      ("PATH={0}" -f $path),
-      ("HOME={0}" -f $repoRoot),
-      ("USERPROFILE={0}" -f $env:USERPROFILE),
-      ("BUN_INSTALL={0}" -f $repoBunInstall),
-      ("OPENCODE_HOME={0}" -f $repoOpencodeDir)
-    ) -join "`n"
-
-    & $nssmPath set $Name AppEnvironmentExtra $envBlock | Out-Null
-
-    $logsDir = Join-Path $repoRoot ".opencode\\logs"
+    $logsDir = Join-Path $RepoRoot ".opencode\logs"
     New-Item -ItemType Directory -Force -Path $logsDir | Out-Null
 
-    & $nssmPath set $Name AppStdout (Join-Path $logsDir "service-stdout.log") | Out-Null
-    & $nssmPath set $Name AppStderr (Join-Path $logsDir "service-stderr.log") | Out-Null
-    & $nssmPath set $Name AppRotateFiles 1 | Out-Null
-    & $nssmPath set $Name AppRotateOnline 1 | Out-Null
-    & $nssmPath set $Name AppRotateSeconds 86400 | Out-Null
-    & $nssmPath set $Name AppRotateBytes 10485760 | Out-Null
+    & $nssmPath set $ServiceName AppStdout (Join-Path $logsDir "service-stdout.log") | Out-Null
+    & $nssmPath set $ServiceName AppStderr (Join-Path $logsDir "service-stderr.log") | Out-Null
+    & $nssmPath set $ServiceName AppRotateFiles 1 | Out-Null
+    & $nssmPath set $ServiceName AppRotateOnline 1 | Out-Null
+    & $nssmPath set $ServiceName AppRotateSeconds 86400 | Out-Null
+    & $nssmPath set $ServiceName AppRotateBytes 10485760 | Out-Null
 
-    Write-Host "OK: installed service via NSSM: $Name" -ForegroundColor Green
+    # Ensure stopping the Windows service also stops the spawned opencode process.
+    & $nssmPath set $ServiceName AppKillProcessTree 1 | Out-Null
+    & $nssmPath set $ServiceName AppStopMethodConsole 1500 | Out-Null
+    & $nssmPath set $ServiceName AppStopMethodWindow 1500 | Out-Null
+    & $nssmPath set $ServiceName AppStopMethodThreads 1500 | Out-Null
+
+    Write-Host "OK: installed service via NSSM: $ServiceName" -ForegroundColor Green
     return
   }
+
+  Write-Host "WARN: nssm.exe not found; falling back to sc.exe (environment isolation may be incomplete)." -ForegroundColor Yellow
 
   $escaped = $bashCommand.Replace('"', '\"')
-  $binPath = ('"{0}" /c "cd /d ""{1}"" && ""{2}"" -lc ""{3}"""' -f $env:ComSpec, $repoRoot, $bashPath, $escaped)
+  $envPrefix = "set OPENCODE_REPO_LOCAL=1&& set OPENCODE_HOME=$RepoRoot\.opencode&& set XDG_CONFIG_HOME=$RepoRoot\.opencode\\xdg\\config&& set XDG_DATA_HOME=$RepoRoot\.opencode\\xdg\\data&& set XDG_CACHE_HOME=$RepoRoot\.opencode\\xdg\\cache&& "
+  $binPath = ('"{0}" /c "cd /d ""{1}"" && {2}""{3}"" -lc ""{4}"""' -f $env:ComSpec, $RepoRoot, $envPrefix, $bashPath, $escaped)
 
-  & sc.exe create $Name binPath= $binPath start= auto DisplayName= $Name | Out-Null
-  Write-Host "OK: installed service via sc.exe: $Name" -ForegroundColor Green
-  return
+  & sc.exe create $ServiceName binPath= $binPath start= auto DisplayName= $ServiceName | Out-Null
+  Write-Host "OK: installed service via sc.exe: $ServiceName" -ForegroundColor Green
 }
 
-if ($Action -eq "uninstall") {
+function Uninstall-Service {
+  param([Parameter(Mandatory = $true)][string]$ServiceName)
+
+  Ensure-Admin -Action "uninstall"
+
+  $nssmPath = Get-NssmPath
   if ($null -ne $nssmPath) {
-    try { & $nssmPath stop $Name | Out-Null } catch { }
-    try { & $nssmPath remove $Name confirm | Out-Null } catch { }
-    Write-Host "OK: removed service via NSSM: $Name" -ForegroundColor Green
+    try { & $nssmPath stop $ServiceName | Out-Null } catch { }
+    try { & $nssmPath remove $ServiceName confirm | Out-Null } catch { }
+    Write-Host "OK: removed service via NSSM: $ServiceName" -ForegroundColor Green
     return
   }
 
-  try { & sc.exe stop $Name | Out-Null } catch { }
-  try { & sc.exe delete $Name | Out-Null } catch { }
-  Write-Host "OK: removed service via sc.exe: $Name" -ForegroundColor Green
-  return
+  try { & sc.exe stop $ServiceName | Out-Null } catch { }
+  try { & sc.exe delete $ServiceName | Out-Null } catch { }
+  Write-Host "OK: removed service via sc.exe: $ServiceName" -ForegroundColor Green
 }
 
-if ($Action -eq "start") { & sc.exe start $Name; return }
-if ($Action -eq "stop") { & sc.exe stop $Name; return }
-if ($Action -eq "status") { & sc.exe query $Name; return }
+function Diagnose-TailscaleServe {
+  if (-not (Test-Command tailscale)) {
+    throw "tailscale not found in PATH."
+  }
 
-if ($Action -eq "logs") {
-  $logsDir = Join-Path $repoRoot ".opencode\\logs"
-  $files = @(
-    (Join-Path $logsDir "service-stdout.log"),
-    (Join-Path $logsDir "service-stderr.log"),
-    (Join-Path $logsDir "opencode-stdout.log"),
-    (Join-Path $logsDir "opencode-stderr.log")
-  )
+  Write-Host "[1] tailscale serve status" -ForegroundColor Cyan
+  & tailscale serve status
+  Write-Host ""
 
-  foreach ($file in $files) {
-    if (Test-Path $file) {
-      Write-Host "=== Tail ${Tail}: $file ===" -ForegroundColor Yellow
-      Get-Content -Tail $Tail $file
-      Write-Host ""
+  Write-Host "[2] tailscale serve reset" -ForegroundColor Cyan
+  & tailscale serve reset
+  Write-Host "OK: tailscale serve reset completed." -ForegroundColor Green
+  Write-Host ""
+
+  Write-Host "[3] tailscale serve status" -ForegroundColor Cyan
+  & tailscale serve status
+}
+
+$repoRoot = Get-RepoRoot
+
+switch ($Action) {
+  "bootstrap" {
+    Ensure-Admin -Action "bootstrap"
+    Install-Service -RepoRoot $repoRoot -ServiceName $Name -Port $Port -TsHttpsPort $TsHttpsPort
+    & sc.exe start $Name | Out-Null
+
+    for ($i = 0; $i -lt 20; $i++) {
+      $out = & sc.exe query $Name 2>$null
+      if ($out -match "RUNNING") { break }
+      Start-Sleep -Seconds 1
+    }
+
+    & sc.exe query $Name
+    Write-Host ""
+
+    if (Test-Command tailscale) {
+      Write-Host "tailscale serve status:" -ForegroundColor Cyan
+      & tailscale serve status
+    } else {
+      Write-Host "INFO: tailscale.exe not found in PATH for this shell." -ForegroundColor Yellow
     }
   }
 
-  return
+  "install" {
+    Install-Service -RepoRoot $repoRoot -ServiceName $Name -Port $Port -TsHttpsPort $TsHttpsPort
+  }
+
+  "uninstall" {
+    Uninstall-Service -ServiceName $Name
+  }
+
+  "start" {
+    Ensure-Admin -Action "start"
+    & sc.exe start $Name
+  }
+
+  "stop" {
+    Ensure-Admin -Action "stop"
+    & sc.exe stop $Name
+  }
+
+  "status" {
+    & sc.exe query $Name
+  }
+
+  "logs" {
+    $logsDir = Join-Path $repoRoot ".opencode\logs"
+    $files = @(
+      (Join-Path $logsDir "service-stdout.log"),
+      (Join-Path $logsDir "service-stderr.log"),
+      (Join-Path $logsDir "opencode-stdout.log"),
+      (Join-Path $logsDir "opencode-stderr.log")
+    )
+
+    foreach ($file in $files) {
+      if (Test-Path $file) {
+        Write-Host "=== Tail ${Tail}: $file ===" -ForegroundColor Yellow
+        Get-Content -Tail $Tail $file
+        Write-Host ""
+      }
+    }
+  }
+
+  "diagnose" {
+    Diagnose-TailscaleServe
+  }
 }

@@ -4,46 +4,56 @@ Standalone, copy-pasteable OpenCode server launcher + quickstart scripts.
 
 ## What’s inside
 
+- `quickstart.sh`: auto-picks tailnet vs local.
 - `scripts/opencode-server.sh`: start/stop OpenCode, optional Tailscale Serve exposure.
 - `scripts/`: convenience wrappers (local, tailnet, basic-auth) + port utilities.
 - `scripts/windows/`: Windows helpers (PowerShell + CMD), including a Tailscale Serve Windows Service wrapper.
+- `.opencode/`: repo-local runtime folders (logs/pids) and optional repo-local OpenCode state.
 
 ## Prereqs
 
 - `opencode` CLI installed and on PATH
 - `bun` installed and on PATH (OpenCode runtime)
-- Optional: `tailscale` installed + signed in (only for `--tailnet` mode)
+- Optional: `tailscale` installed + signed in (only for tailnet mode)
 - Windows Service mode:
   - Git for Windows (for `bash.exe`)
   - Optional: `nssm` (preferred), otherwise falls back to `sc.exe`
 
+
+## Prerequisite (first run)
+
+Installs repo-local OpenCode plugin dependencies from `.opencode/package.json`.
+
+```bash
+./scripts/prerequisite.sh install
+```
+
+Windows PowerShell:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\prerequisite.ps1 -Action install
+```
 ## Quick start
+
+### Recommended (auto)
+
+Runs tailnet mode if `tailscale` exists, otherwise runs local-only:
+
+```bash
+./quickstart.sh
+```
 
 ### Local only (no auth)
 
-Run in Git Bash / WSL:
-
 ```bash
 ./scripts/start-server-local.sh
-```
-
-Then connect your client:
-
-```bash
 opencode attach localhost:4096
 ```
 
-### Tailnet only (recommended)
-
-Run in Git Bash / WSL:
+### Tailnet only (recommended when available)
 
 ```bash
 ./scripts/start-server-tailnet.sh
-```
-
-Check the URL:
-
-```bash
 tailscale serve status
 ```
 
@@ -56,18 +66,55 @@ export OPENCODE_SERVER_PASSWORD='change-me'
 
 ## Windows: run as a service (tailnet)
 
-From an elevated terminal (or double-click the CMD which self-elevates):
+> Known issues (2026-01-25):
+> - Windows service mode is still buggy: stopping the service may leave `opencode.exe`/`bun` running in the background.
+> - The service defaults should be `Port=5096` and `TsHttpsPort=9443`, but some installs still end up using `4096/8443`.
+> - Root cause is still under investigation; treat service mode as experimental.
+>
+> Recommendation: use `./quickstart.sh` (interactive) for now.
+Defaults: `Port=5096`, `TsHttpsPort=9443` (override with `-Port` / `-TsHttpsPort`).\nNote: When installed via `nssm`, the service is configured with `AppKillProcessTree=1` so stopping the service also stops the `opencode` child process (no lingering background server).
 
-```bat
-scripts\\windows\\tailnet-service.cmd bootstrap
+From an elevated PowerShell:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\windows\tailnet-service.ps1 -Action bootstrap
 ```
 
-## Use this repo in another repo
+Check status:
 
-- Copy the `scripts/` folder into the target repo root.
-- Or add this repo as a submodule and symlink/copy `scripts/` as needed.
+```powershell
+tailscale serve status
+sc.exe query opencode-tailnet
+```
+
+Logs:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\windows\tailnet-service.ps1 -Action logs
+```
+
+If Tailscale Serve looks stuck:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\windows\tailnet-service.ps1 -Action diagnose
+```\n## Use this repo in another repo
+
+- Copy `quickstart.sh` and `scripts/` into the target repo root.
+- Also copy `.opencode/` if you want repo-local logs/pids.
 
 ## “Say this to your agent”
 
-- “Copy `scripts/` from `kano-opencode-quickstart` into my repo `<path>` and make sure `.opencode/logs/` and `.opencode/run/` are gitignored.”
-- “On Windows, set up the tailnet service for port 4096 and show me how to check logs.”
+- Say this to your agent: “Install `kano-opencode-quickstart` into my repo at `<path>`; I want `./quickstart.sh` at repo root and the `scripts/` folder.”
+- The agent will do: copy `quickstart.sh` + `scripts/`, run `./scripts/prerequisite.sh install` once, and ensure `\.opencode/logs/` + `\.opencode/run/` + `\.opencode/node_modules/` are gitignored.
+- Expected output: `<path>/quickstart.sh` and `<path>/scripts/opencode-server.sh` (plus updated `<path>/.gitignore`).
+
+- Say this to your agent: “On Windows, set up the tailnet service for port 4096 and show me how to check logs.”
+- The agent will do: run `powershell -NoProfile -ExecutionPolicy Bypass -File scripts\\windows\\tailnet-service.ps1 -Action bootstrap` and verify `tailscale serve status`.
+- Expected output: a running Windows service (`opencode-tailnet`) and log files under `.opencode\\logs\\`.
+
+
+
+
+
+
+

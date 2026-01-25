@@ -1,14 +1,16 @@
 @echo off
 setlocal EnableExtensions EnableDelayedExpansion
 
-set "DEFAULT_NAME=opencode-tailnet"
-set "DEFAULT_PORT=4096"
-set "DEFAULT_TS_HTTPS_PORT=8443"
-
 set "SCRIPT_DIR=%~dp0"
 set "PS1=%SCRIPT_DIR%tailnet-service.ps1"
 
-rem Ensure elevation (services require admin; double-click usually isn't elevated).
+if not exist "%PS1%" (
+  echo ERROR: Missing script: %PS1%
+  pause
+  exit /b 2
+)
+
+rem Ensure elevation (service install/remove requires admin).
 net session >nul 2>&1
 if not "%errorlevel%"=="0" (
   powershell -NoProfile -ExecutionPolicy Bypass -Command ^
@@ -16,17 +18,15 @@ if not "%errorlevel%"=="0" (
   exit /b %errorlevel%
 )
 
-powershell -NoProfile -ExecutionPolicy Bypass -File "%PS1%" -Action uninstall -Name "%DEFAULT_NAME%" -Port "%DEFAULT_PORT%" -TsHttpsPort "%DEFAULT_TS_HTTPS_PORT%"
-if errorlevel 1 goto :fail
+powershell -NoProfile -ExecutionPolicy Bypass -File "%PS1%" -Action uninstall
+if errorlevel 1 (
+  echo.
+  echo ERROR: Unregister/uninstall failed.
+  pause
+  exit /b 2
+)
 
 echo.
-echo OK: Service '%DEFAULT_NAME%' unregistered (removed).
-echo.
+echo OK: Service removed.
 pause
 exit /b 0
-
-:fail
-echo ERROR: Unregister failed.
-pause
-exit /b 2
-
