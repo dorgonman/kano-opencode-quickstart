@@ -15,6 +15,8 @@ PORT="4096"
 AUTH_MODE="auto" # auto|basic|none
 PASSWORD_ENV="OPENCODE_SERVER_PASSWORD"
 
+WORKSPACE=""
+
 TAILNET="0"
 TS_HTTPS_PORT="8443"
 BG="0"
@@ -31,6 +33,7 @@ Usage:
   $(basename "$0") --status
 
 Options:
+  --workspace <dir>  Use this directory as the workspace root (opencode serve CWD).
   --host <ip>         Bind OpenCode to this host (default: 127.0.0.1).
   --port <port>       Bind OpenCode to this port (default: 4096).
   --auth <mode>       auto|basic|none (default: auto).
@@ -59,6 +62,7 @@ EOF
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
+    --workspace) WORKSPACE="${2:-}"; [[ -n "$WORKSPACE" ]] || { echo "ERROR: --workspace requires a value." >&2; exit 2; }; shift 2;;
     --host) HOST="${2:-}"; [[ -n "$HOST" ]] || { echo "ERROR: --host requires a value." >&2; exit 2; }; shift 2;;
     --port) PORT="${2:-}"; [[ -n "$PORT" ]] || { echo "ERROR: --port requires a value." >&2; exit 2; }; shift 2;;
     --auth) AUTH_MODE="${2:-}"; [[ -n "$AUTH_MODE" ]] || { echo "ERROR: --auth requires a value." >&2; exit 2; }; shift 2;;
@@ -260,7 +264,15 @@ start_opencode() {
     echo "INFO: Auth     : none" >&2
   fi
 
-  cd "$REPO_ROOT"
+  if [[ -n "${WORKSPACE:-}" ]]; then
+    if [[ ! -d "$WORKSPACE" ]]; then
+      echo "ERROR: workspace path is not a directory: $WORKSPACE" >&2
+      exit 2
+    fi
+    cd "$WORKSPACE"
+  else
+    cd "$REPO_ROOT"
+  fi
 
   if [[ "$SERVICE" == "1" ]]; then
     # Service mode: start opencode as a normal child process (no nohup) so the service stop can kill it.
