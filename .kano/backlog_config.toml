@@ -1,0 +1,7 @@
+# Project-Level Backlog Configuration for kano-opencode-quickstart
+# Points to external backlog storage in kano-agent-backlog-skill-demo
+
+[products.kano-opencode-quickstart]
+name = "kano-opencode-quickstart"
+prefix = "KO"
+backlog_root = "../kano-agent-backlog-skill-demo/_kano/backlog/products/kano-opencode-quickstart"

@@ -4,6 +4,19 @@
 .opencode/logs/
 .opencode/run/
 
+# Kano Backlog - Derived/Cache Data (never ignore canonical data)
+# IMPORTANT: .kano/backlog_config.toml should always be committed
+.kano/cache/
+.kano/debug/
+_kano/backlog/**/.cache/
+_kano/backlog/**/_index/
+_kano/backlog/_logs/
+_kano/backlog/_tmp_tests/
+_kano/backlog/_trash/
+_kano/backlog_sandbox/
+_kano/backlog/topics/**/materials/
+_kano/backlog/views/_analysis/
+
 # IDE
 .vscode/
 .idea/
