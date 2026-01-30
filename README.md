@@ -20,18 +20,70 @@ Standalone, copy-pasteable OpenCode server launcher + quickstart scripts.
   - Optional: `nssm` (preferred), otherwise falls back to `sc.exe`
 
 
-## Prerequisite (first run)
+## Dependency Management
 
-Installs repo-local OpenCode plugin dependencies from `.opencode/package.json`.
+### First-time setup (install)
+
+Installs repo-local OpenCode plugin dependencies from `.opencode/package.json` at specified versions.
 
 ```bash
-./scripts/prerequisite.sh install
+# Using wrapper script (recommended)
+./scripts/opencode-deps-install.sh
+
+# Or using manager directly
+./scripts/opencode-deps-manager.sh install
 ```
 
 Windows PowerShell:
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File scripts\prerequisite.ps1 -Action install
+# Using wrapper script (recommended)
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\windows\opencode-deps-install.ps1
+
+# Or using manager directly
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\windows\opencode-deps-manager.ps1 -Action install
+```
+
+### Update to latest versions
+
+Updates OpenCode CLI, oh-my-opencode, and all repo-local plugin dependencies to their latest versions.
+
+```bash
+# Using wrapper script (recommended)
+./scripts/opencode-deps-update.sh
+
+# Or using manager directly
+./scripts/opencode-deps-manager.sh update
+
+# Dry-run (preview what would be updated)
+./scripts/opencode-deps-update.sh --dry-run
+```
+
+Windows PowerShell:
+
+```powershell
+# Using wrapper script (recommended)
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\windows\opencode-deps-update.ps1
+
+# Or using manager directly
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\windows\opencode-deps-manager.ps1 -Action update
+
+# Dry-run
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\windows\opencode-deps-update.ps1 -DryRun
+```
+
+### Check status
+
+View current environment and dependency versions.
+
+```bash
+./scripts/opencode-deps-manager.sh status
+```
+
+Windows PowerShell:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\windows\opencode-deps-manager.ps1 -Action status
 ```
 ## Quick start
 
@@ -105,7 +157,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\windows\tailnet-serv
 ## “Say this to your agent”
 
 - Say this to your agent: “Install `kano-opencode-quickstart` into my repo at `<path>`; I want `./quickstart.sh` at repo root and the `scripts/` folder.”
-- The agent will do: copy `quickstart.sh` + `scripts/`, run `./scripts/prerequisite.sh install` once, and ensure `\.opencode/logs/` + `\.opencode/run/` + `\.opencode/node_modules/` are gitignored.
+- The agent will do: copy `quickstart.sh` + `scripts/`, run `./scripts/opencode-deps-install.sh` once, and ensure `\.opencode/logs/` + `\.opencode/run/` + `\.opencode/node_modules/` are gitignored.
 - Expected output: `<path>/quickstart.sh` and `<path>/scripts/opencode-server.sh` (plus updated `<path>/.gitignore`).
 
 - Say this to your agent: “On Windows, set up the tailnet service for port 4096 and show me how to check logs.”
