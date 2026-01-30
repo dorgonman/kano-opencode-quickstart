@@ -3,6 +3,33 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
 
+# Check if dependencies are installed (first-time setup)
+check_and_install_deps() {
+  local opencode_dir="${SCRIPT_DIR}/.opencode"
+  
+  # Check if node_modules exists
+  if [[ ! -d "${opencode_dir}/node_modules" ]]; then
+    echo "========================================" >&2
+    echo "INFO: First-time setup detected!" >&2
+    echo "      Installing OpenCode dependencies..." >&2
+    echo "========================================" >&2
+    if [[ -x "${SCRIPT_DIR}/scripts/opencode-deps-install.sh" ]]; then
+      "${SCRIPT_DIR}/scripts/opencode-deps-install.sh"
+      echo "" >&2
+      echo "✓ Dependencies installed successfully!" >&2
+      echo "" >&2
+    else
+      echo "WARN: opencode-deps-install.sh not found, skipping dependency installation" >&2
+    fi
+  else
+    # Dependencies exist, just show a quick tip
+    echo "INFO: Dependencies installed. (Run './scripts/opencode-deps-update.sh' to update)" >&2
+  fi
+}
+
+# Run dependency check
+check_and_install_deps
+
 WORKSPACE_PATH="${PWD}"
 if [[ $# -gt 0 ]] && [[ "${1}" != -* ]]; then
   WORKSPACE_PATH="$1"

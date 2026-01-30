@@ -89,10 +89,18 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\windows\opencode-dep
 
 ### Recommended (auto)
 
-Runs tailnet mode if `tailscale` exists, otherwise runs local-only:
+Runs tailnet mode if `tailscale` exists, otherwise runs local-only.
+
+**First-time setup**: The script automatically detects if dependencies are not installed and runs `opencode-deps-install.sh` for you.
 
 ```bash
 ./quickstart.sh
+```
+
+**Subsequent runs**: Dependencies are already installed, server starts immediately. To update dependencies, run:
+
+```bash
+./scripts/opencode-deps-update.sh
 ```
 
 ### Local only (no auth)
@@ -157,8 +165,9 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\windows\tailnet-serv
 ## “Say this to your agent”
 
 - Say this to your agent: “Install `kano-opencode-quickstart` into my repo at `<path>`; I want `./quickstart.sh` at repo root and the `scripts/` folder.”
-- The agent will do: copy `quickstart.sh` + `scripts/`, run `./scripts/opencode-deps-install.sh` once, and ensure `\.opencode/logs/` + `\.opencode/run/` + `\.opencode/node_modules/` are gitignored.
+- The agent will do: copy `quickstart.sh` + `scripts/`, and ensure `\.opencode/logs/` + `\.opencode/run/` + `\.opencode/node_modules/` are gitignored.
 - Expected output: `<path>/quickstart.sh` and `<path>/scripts/opencode-server.sh` (plus updated `<path>/.gitignore`).
+- Note: On first run, `quickstart.sh` automatically installs dependencies via `opencode-deps-install.sh`.
 
 - Say this to your agent: “On Windows, set up the tailnet service for port 4096 and show me how to check logs.”
 - The agent will do: run `powershell -NoProfile -ExecutionPolicy Bypass -File scripts\\windows\\tailnet-service.ps1 -Action bootstrap` and verify `tailscale serve status`.
