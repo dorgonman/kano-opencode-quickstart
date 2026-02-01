@@ -23,6 +23,7 @@ BG="0"
 SERVICE="0"
 STOP="0"
 STATUS="0"
+KILL_PORT_LISTENERS="1"
 
 usage() {
   cat <<EOF
@@ -36,6 +37,8 @@ Options:
   --workspace <dir>  Use this directory as the workspace root (opencode serve CWD).
   --host <ip>         Bind OpenCode to this host (default: 127.0.0.1).
   --port <port>       Bind OpenCode to this port (default: 4096).
+  --kill-port-listeners  Kill any process listening on <port> before starting (DANGEROUS).
+  --no-kill-port-listeners  Do not kill listeners (fails if <port> in use).
   --auth <mode>       auto|basic|none (default: auto).
   --password-env <E>  Password env var used for basic auth (default: OPENCODE_SERVER_PASSWORD).
 
@@ -65,6 +68,8 @@ while [[ $# -gt 0 ]]; do
     --workspace) WORKSPACE="${2:-}"; [[ -n "$WORKSPACE" ]] || { echo "ERROR: --workspace requires a value." >&2; exit 2; }; shift 2;;
     --host) HOST="${2:-}"; [[ -n "$HOST" ]] || { echo "ERROR: --host requires a value." >&2; exit 2; }; shift 2;;
     --port) PORT="${2:-}"; [[ -n "$PORT" ]] || { echo "ERROR: --port requires a value." >&2; exit 2; }; shift 2;;
+    --kill-port-listeners|--kill-port|--force-port) KILL_PORT_LISTENERS="1"; shift;;
+    --no-kill-port-listeners) KILL_PORT_LISTENERS="0"; shift;;
     --auth) AUTH_MODE="${2:-}"; [[ -n "$AUTH_MODE" ]] || { echo "ERROR: --auth requires a value." >&2; exit 2; }; shift 2;;
     --no-auth) AUTH_MODE="none"; shift;;
     --password-env) PASSWORD_ENV="${2:-}"; [[ -n "$PASSWORD_ENV" ]] || { echo "ERROR: --password-env requires a value." >&2; exit 2; }; shift 2;;
@@ -254,7 +259,11 @@ start_opencode() {
 
   # Restart semantics: stop any previous --bg instance started by this script.
   stop_opencode_only
+  if [[ "$KILL_PORT_LISTENERS" == "1" ]]; then
+    kill_port_listeners
+  fi
   stop_opencode_on_port_if_any
+  ensure_port_available
 
   echo "INFO: RepoRoot : $REPO_ROOT" >&2
   echo "INFO: Bind     : http://${HOST}:${PORT}" >&2
@@ -280,7 +289,7 @@ start_opencode() {
       > "${LOG_DIR}/opencode-stdout.log" \
       2> "${LOG_DIR}/opencode-stderr.log" &
     echo $! > "$OPENCODE_PID_FILE"
-    echo "OK: opencode server started for service (pid=$(cat \"$OPENCODE_PID_FILE\"))" >&2
+    echo "OK: opencode server started for service (pid=$(cat "$OPENCODE_PID_FILE"))" >&2
     return 0
   fi
 
@@ -289,7 +298,7 @@ start_opencode() {
       > "${LOG_DIR}/opencode-stdout.log" \
       2> "${LOG_DIR}/opencode-stderr.log" &
     echo $! > "$OPENCODE_PID_FILE"
-    echo "OK: opencode server started in background (pid=$(cat \"$OPENCODE_PID_FILE\"))" >&2
+    echo "OK: opencode server started in background (pid=$(cat "$OPENCODE_PID_FILE"))" >&2
   else
     exec opencode serve --hostname "$HOST" --port "$PORT"
   fi
@@ -334,6 +343,67 @@ stop_opencode_only() {
     rm -f "$OPENCODE_PID_FILE"
   else
     return 0
+  fi
+}
+
+port_listener_pids() {
+  if have_cmd lsof; then
+    lsof -nP -t -iTCP:"${PORT}" -sTCP:LISTEN 2>/dev/null || true
+    return 0
+  fi
+  return 0
+}
+
+show_port_listeners() {
+  if have_cmd lsof; then
+    lsof -nP -iTCP:"${PORT}" -sTCP:LISTEN 2>/dev/null || true
+  fi
+}
+
+ensure_port_available() {
+  if [[ "${OS:-}" == "Windows_NT" ]]; then
+    return 0
+  fi
+
+  local pids=""
+  pids="$(port_listener_pids)"
+  if [[ -z "$pids" ]]; then
+    return 0
+  fi
+
+  echo "ERROR: port ${PORT} is already in use." >&2
+  show_port_listeners >&2 || true
+  echo "Hint : Choose another port: --port 4097" >&2
+  echo "Hint : Or force-kill listeners: --kill-port-listeners" >&2
+  exit 2
+}
+
+kill_port_listeners() {
+  if [[ "${OS:-}" == "Windows_NT" ]]; then
+    return 0
+  fi
+
+  local pids=""
+  pids="$(port_listener_pids)"
+  if [[ -z "$pids" ]]; then
+    return 0
+  fi
+
+  echo "WARN: killing process(es) listening on port ${PORT}: ${pids}" >&2
+  show_port_listeners >&2 || true
+
+  for pid in $pids; do
+    kill "$pid" >/dev/null 2>&1 || true
+  done
+
+  sleep 0.3
+
+  local still=""
+  still="$(port_listener_pids)"
+  if [[ -n "$still" ]]; then
+    for pid in $still; do
+      kill -9 "$pid" >/dev/null 2>&1 || true
+    done
   fi
 }
 
