@@ -1,7 +1,39 @@
+#
 # Project-Level Backlog Configuration for kano-opencode-quickstart
-# Points to external backlog storage in kano-agent-backlog-skill-demo
+#
+# This repo is configured to point at an external backlog storage location
+# (currently under kano-agent-backlog-skill-demo). Keep product ownership here
+# (this file) even if the canonical backlog data lives elsewhere.
+#
+
+# Global defaults applied to this project (and all products defined here)
+[defaults]
+# Keep defaults minimal; override per-product via [products.<name>.overrides] if needed.
+skill_developer = false
+auto_refresh = true
+
+# Shared settings for all products in this project
+[shared.log]
+debug = false
+
+[shared.cache]
+# Store derived artifacts (chunks DB, indexes) under this repo by default.
+# If you want a shared cache across multiple repos, change this path.
+root = ".kano/cache/backlog"
+
+[shared.vector]
+enabled = true
+backend = "sqlite"
+path = ".kano/cache/backlog/vector"
+collection = "backlog"
+metric = "cosine"
 
 [products.kano-opencode-quickstart]
 name = "kano-opencode-quickstart"
 prefix = "KO"
 backlog_root = "../kano-agent-backlog-skill-demo/_kano/backlog/products/kano-opencode-quickstart"
+# Added by kano-backlog admin init (2026-02-02 16:36:21Z, agent=codex)
+[products.admin-init-smoke2]
+name = "admin-init-smoke2"
+prefix = "AI"
+backlog_root = "_kano/backlog/products/admin-init-smoke2"

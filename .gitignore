@@ -29,3 +29,12 @@ Thumbs.db
 # Logs/pids
 *.log
 *.pid
+
+# Local scratch (generated during agent runs; not source-of-truth)
+*.db-journal
+file-ext-test.db
+python-write-test.txt
+sqlite-connect-only.db
+sqlite-io-root-test.db
+sqlite-io-root-test.db-journal
+sqlite-journal-memory-test.db

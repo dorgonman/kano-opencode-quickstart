@@ -23,7 +23,12 @@ check_and_install_deps() {
     fi
   else
     # Dependencies exist, just show a quick tip
-    echo "INFO: Dependencies installed. (Run './scripts/opencode-deps-update.sh' to update)" >&2
+    echo "INFO: Dependencies installed. Running './scripts/opencode-deps-update.sh' to update..." >&2
+    if [[ -x "${SCRIPT_DIR}/scripts/opencode-deps-update.sh" ]]; then
+      "${SCRIPT_DIR}/scripts/opencode-deps-update.sh"
+    else
+      echo "WARN: opencode-deps-update.sh not found, skipping dependency update" >&2
+    fi
   fi
 }
 
