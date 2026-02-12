@@ -13,8 +13,8 @@ check_and_install_deps() {
     echo "INFO: First-time setup detected!" >&2
     echo "      Installing OpenCode dependencies..." >&2
     echo "========================================" >&2
-    if [[ -x "${SCRIPT_DIR}/scripts/opencode-deps-install.sh" ]]; then
-      "${SCRIPT_DIR}/scripts/opencode-deps-install.sh"
+    if [[ -x "${SCRIPT_DIR}/scripts/deps/opencode-deps-install.sh" ]]; then
+      "${SCRIPT_DIR}/scripts/deps/opencode-deps-install.sh"
       echo "" >&2
       echo "✓ Dependencies installed successfully!" >&2
       echo "" >&2
@@ -23,9 +23,9 @@ check_and_install_deps() {
     fi
   else
     # Dependencies exist, just show a quick tip
-    echo "INFO: Dependencies installed. Running './scripts/opencode-deps-update.sh' to update..." >&2
-    if [[ -x "${SCRIPT_DIR}/scripts/opencode-deps-update.sh" ]]; then
-      "${SCRIPT_DIR}/scripts/opencode-deps-update.sh"
+    echo "INFO: Dependencies installed. Running './scripts/deps/opencode-deps-update.sh' to update..." >&2
+    if [[ -x "${SCRIPT_DIR}/scripts/deps/opencode-deps-update.sh" ]]; then
+      "${SCRIPT_DIR}/scripts/deps/opencode-deps-update.sh"
     else
       echo "WARN: opencode-deps-update.sh not found, skipping dependency update" >&2
     fi
@@ -64,7 +64,7 @@ echo "INFO: Attach (CLI root = workspace):" >&2
 printf '      cd "%s" && opencode attach localhost:%s\n' "$WORKSPACE_PATH" "$ATTACH_PORT" >&2
 
 if command -v tailscale >/dev/null 2>&1; then
-  exec "${SCRIPT_DIR}/scripts/start-server-tailnet.sh" --workspace "$WORKSPACE_PATH" "$@"
+  exec "${SCRIPT_DIR}/scripts/server/start-tailnet.sh" --workspace "$WORKSPACE_PATH" "$@"
 fi
 
-exec "${SCRIPT_DIR}/scripts/start-server-local.sh" --workspace "$WORKSPACE_PATH" "$@"
+exec "${SCRIPT_DIR}/scripts/server/start-local.sh" --workspace "$WORKSPACE_PATH" "$@"

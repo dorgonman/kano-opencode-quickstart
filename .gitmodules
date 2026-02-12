@@ -1,3 +1,14 @@
 [submodule "skills/kano-agent-backlog-skill"]
 	path = skills/kano-agent-backlog-skill
 	url = https://github.com/dorgonman/kano-agent-backlog-skill/
+[submodule "skills/kano-git-master-skill"]
+	path = skills/kano-git-master-skill
+	url = https://github.com/dorgonman/kano-git-master-skill.git
+[submodule "src/oh-my-opencode"]
+	path = src/oh-my-opencode
+	url = https://github.com/code-yeongyu/oh-my-opencode.git
+	branch = dev
+[submodule "src/opencode"]
+	path = src/opencode
+	url = https://github.com/anomalyco/opencode.git
+	branch = dev

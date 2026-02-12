@@ -31,7 +31,7 @@ metric = "cosine"
 [products.kano-opencode-quickstart]
 name = "kano-opencode-quickstart"
 prefix = "KO"
-backlog_root = "../kano-agent-backlog-skill-demo/_kano/backlog/products/kano-opencode-quickstart"
+backlog_root = "_kano/backlog/products/kano-opencode-quickstart"
 # Added by kano-backlog admin init (2026-02-02 16:36:21Z, agent=codex)
 [products.admin-init-smoke2]
 name = "admin-init-smoke2"

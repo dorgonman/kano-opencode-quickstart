@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OpenCode localStorage 同步工具</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .container {
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      max-width: 800px;
+      width: 100%;
+      padding: 40px;
+    }
+    
+    h1 {
+      color: #333;
+      margin-bottom: 10px;
+      font-size: 28px;
+    }
+    
+    .subtitle {
+      color: #666;
+      margin-bottom: 30px;
+      font-size: 14px;
+    }
+    
+    .warning {
+      background: #fff3cd;
+      border-left: 4px solid #ffc107;
+      padding: 15px;
+      margin-bottom: 20px;
+      border-radius: 4px;
+    }
+    
+    .warning strong {
+      color: #856404;
+    }
+    
+    .section {
+      margin-bottom: 30px;
+    }
+    
+    .section h2 {
+      color: #667eea;
+      font-size: 18px;
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .section h2::before {
+      content: '';
+      width: 4px;
+      height: 20px;
+      background: #667eea;
+      border-radius: 2px;
+    }
+    
+    button {
+      background: #667eea;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      width: 100%;
+      margin-bottom: 10px;
+    }
+    
+    button:hover {
+      background: #5568d3;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+    
+    button:active {
+      transform: translateY(0);
+    }
+    
+    button.secondary {
+      background: #6c757d;
+    }
+    
+    button.secondary:hover {
+      background: #5a6268;
+    }
+    
+    button.success {
+      background: #28a745;
+    }
+    
+    button.success:hover {
+      background: #218838;
+    }
+    
+    textarea {
+      width: 100%;
+      min-height: 150px;
+      padding: 12px;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+      resize: vertical;
+      margin-bottom: 10px;
+    }
+    
+    textarea:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+    
+    .stats {
+      background: #f8f9fa;
+      padding: 15px;
+      border-radius: 8px;
+      margin-top: 15px;
+    }
+    
+    .stats p {
+      margin: 5px 0;
+      color: #495057;
+      font-size: 14px;
+    }
+    
+    .stats strong {
+      color: #667eea;
+    }
+    
+    .info {
+      background: #d1ecf1;
+      border-left: 4px solid #17a2b8;
+      padding: 15px;
+      margin-top: 20px;
+      border-radius: 4px;
+      font-size: 14px;
+      color: #0c5460;
+    }
+    
+    .success-message {
+      background: #d4edda;
+      border-left: 4px solid #28a745;
+      padding: 15px;
+      margin-top: 15px;
+      border-radius: 4px;
+      color: #155724;
+      display: none;
+    }
+    
+    .error-message {
+      background: #f8d7da;
+      border-left: 4px solid #dc3545;
+      padding: 15px;
+      margin-top: 15px;
+      border-radius: 4px;
+      color: #721c24;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🔄 OpenCode localStorage 同步工具</h1>
+    <p class="subtitle">解決 localhost 和 Tailscale 網址資料不同步的問題</p>
+    
+    <div class="warning">
+      <strong>⚠️ 重要說明：</strong>
+      <p>瀏覽器的 localStorage 是按照<strong>網域（domain）</strong>隔離的。</p>
+      <p>• <code>localhost:4096</code> 和 <code>your-machine.tailscale.net:4096</code> 是不同的網域</p>
+      <p>• 所以它們的 localStorage 資料是完全獨立的</p>
+      <p>• 這個工具可以幫你在不同網域之間複製資料</p>
+    </div>
+
+    <!-- 匯出區域 -->
+    <div class="section">
+      <h2>1️⃣ 匯出資料（從來源網域）</h2>
+      <p style="margin-bottom: 15px; color: #666;">
+        在你想要<strong>複製資料的來源網域</strong>（例如 localhost）開啟這個頁面，點擊下方按鈕：
+      </p>
+      <button onclick="exportData()">📤 匯出 OpenCode 資料</button>
+      <textarea id="exportArea" placeholder="匯出的資料會顯示在這裡..." readonly></textarea>
+      <button class="secondary" onclick="copyExport()">📋 複製到剪貼簿</button>
+      <div id="exportStats" class="stats" style="display: none;"></div>
+    </div>
+
+    <!-- 匯入區域 -->
+    <div class="section">
+      <h2>2️⃣ 匯入資料（到目標網域）</h2>
+      <p style="margin-bottom: 15px; color: #666;">
+        在你想要<strong>貼上資料的目標網域</strong>（例如 Tailscale）開啟這個頁面，貼上資料：
+      </p>
+      <textarea id="importArea" placeholder="貼上匯出的 JSON 資料..."></textarea>
+      <button class="success" onclick="importData()">📥 匯入資料</button>
+      <div id="importStats" class="stats" style="display: none;"></div>
+    </div>
+
+    <div class="success-message" id="successMessage"></div>
+    <div class="error-message" id="errorMessage"></div>
+
+    <div class="info">
+      <strong>💡 使用步驟：</strong>
+      <ol style="margin-left: 20px; margin-top: 10px;">
+        <li>在 <code>localhost:4096</code> 開啟這個 HTML 檔案</li>
+        <li>點擊「匯出 OpenCode 資料」並複製</li>
+        <li>在 <code>your-machine.tailscale.net:4096</code> 開啟這個 HTML 檔案</li>
+        <li>貼上資料並點擊「匯入資料」</li>
+        <li>重新整理頁面，資料就同步了！</li>
+      </ol>
+    </div>
+  </div>
+
+  <script>
+    function exportData() {
+      try {
+        const backup = {};
+        let count = 0;
+        let totalSize = 0;
+
+        for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i);
+          if (key && key.startsWith('opencode.')) {
+            const value = localStorage.getItem(key);
+            if (value) {
+              backup[key] = value;
+              count++;
+              totalSize += value.length;
+            }
+          }
+        }
+
+        const json = JSON.stringify(backup, null, 2);
+        document.getElementById('exportArea').value = json;
+        
+        const stats = document.getElementById('exportStats');
+        stats.innerHTML = `
+          <p><strong>匯出成功！</strong></p>
+          <p>• 項目數量：${count}</p>
+          <p>• 資料大小：${(totalSize / 1024).toFixed(2)} KB</p>
+          <p>• 當前網域：${window.location.hostname}</p>
+        `;
+        stats.style.display = 'block';
+
+        showSuccess(`✅ 成功匯出 ${count} 個項目！`);
+      } catch (error) {
+        showError('匯出失敗：' + error.message);
+      }
+    }
+
+    function copyExport() {
+      const textarea = document.getElementById('exportArea');
+      if (!textarea.value) {
+        showError('請先匯出資料！');
+        return;
+      }
+
+      textarea.select();
+      document.execCommand('copy');
+      showSuccess('✅ 已複製到剪貼簿！');
+    }
+
+    function importData() {
+      try {
+        const textarea = document.getElementById('importArea');
+        const json = textarea.value.trim();
+        
+        if (!json) {
+          showError('請貼上匯出的資料！');
+          return;
+        }
+
+        const backup = JSON.parse(json);
+        let imported = 0;
+        let failed = 0;
+
+        Object.entries(backup).forEach(([key, value]) => {
+          try {
+            localStorage.setItem(key, value);
+            imported++;
+          } catch (e) {
+            console.error('Failed to set', key, e);
+            failed++;
+          }
+        });
+
+        const stats = document.getElementById('importStats');
+        stats.innerHTML = `
+          <p><strong>匯入完成！</strong></p>
+          <p>• 成功匯入：${imported} 個項目</p>
+          ${failed > 0 ? `<p style="color: #dc3545;">• 失敗：${failed} 個項目</p>` : ''}
+          <p>• 目標網域：${window.location.hostname}</p>
+        `;
+        stats.style.display = 'block';
+
+        showSuccess(`✅ 成功匯入 ${imported} 個項目！請重新整理頁面。`);
+        
+        // 3 秒後自動重新整理
+        setTimeout(() => {
+          if (confirm('資料已匯入！是否要重新整理頁面？')) {
+            location.reload();
+          }
+        }, 2000);
+      } catch (error) {
+        showError('匯入失敗：' + error.message);
+      }
+    }
+
+    function showSuccess(message) {
+      const el = document.getElementById('successMessage');
+      el.textContent = message;
+      el.style.display = 'block';
+      setTimeout(() => el.style.display = 'none', 5000);
+    }
+
+    function showError(message) {
+      const el = document.getElementById('errorMessage');
+      el.textContent = message;
+      el.style.display = 'block';
+      setTimeout(() => el.style.display = 'none', 5000);
+    }
+  </script>
+</body>
+</html>

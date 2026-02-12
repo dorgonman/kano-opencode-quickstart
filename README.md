@@ -10,14 +10,69 @@ Standalone, copy-pasteable OpenCode server launcher + quickstart scripts.
 - `scripts/windows/`: Windows helpers (PowerShell + CMD), including a Tailscale Serve Windows Service wrapper.
 - `.opencode/`: repo-local runtime folders (logs/pids) and optional repo-local OpenCode state.
 
+## Modes
+
+This repository supports two modes of operation:
+
+### User Mode (Default)
+
+For general users who want to use the official OpenCode release.
+
+- Uses the `opencode` CLI installed on your system
+- No source code required
+- Automatic dependency management
+- Recommended for most users
+
+**Quick start:**
+```bash
+./quickstart.sh
+```
+
+### Developer Mode
+
+For contributors who want to run OpenCode from source code.
+
+- Runs OpenCode directly from `src/opencode` submodule
+- Supports upstream synchronization
+- Useful for testing changes and contributing
+- Requires `bun` and git submodules
+
+**Quick start:**
+```bash
+# First time: initialize submodules
+git submodule update --init --recursive
+
+# Run from source
+./scripts/dev-mode/quickstart-dev.sh
+
+# Update submodules and run
+./scripts/dev-mode/quickstart-dev.sh -U
+
+# Skip submodule sync
+./scripts/dev-mode/quickstart-dev.sh -S
+
+# Show help
+./scripts/dev-mode/quickstart-dev.sh -h
+```
+
+**Developer Mode Options:**
+- `-U, --update`: Fetch latest from upstream/origin and rebase current branch
+- `-S, --skip-sync`: Skip syncing OpenCode/oh-my-opencode submodules
+- `-h, --help`: Show help message
+
 ## Prereqs
 
+### User Mode
 - `opencode` CLI installed and on PATH
 - `bun` installed and on PATH (OpenCode runtime)
 - Optional: `tailscale` installed + signed in (only for tailnet mode)
 - Windows Service mode:
   - Git for Windows (for `bash.exe`)
   - Optional: `nssm` (preferred), otherwise falls back to `sc.exe`
+
+### Developer Mode (Additional)
+- Git submodules initialized: `git submodule update --init --recursive`
+- `bun` for running OpenCode from source
 
 
 ## Dependency Management
