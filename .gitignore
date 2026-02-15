@@ -38,3 +38,7 @@ sqlite-connect-only.db
 sqlite-io-root-test.db
 sqlite-io-root-test.db-journal
 sqlite-journal-memory-test.db
+skills/kano-git-master-skill/skills/kano/
+skills/kano-git-master-skill/skills/kano/kano-agent-backlog-skill/
+skills/kano-git-master-skill/skills/kano/kano-filesystem-safe-ops-skill/
+skills/kano-git-master-skill/_kano/backlog/

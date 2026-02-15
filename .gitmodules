@@ -1,3 +1,11 @@
+[kog-root-remote "origin"]
+	kog-url-ssh = git@github.com:dorgonman/kano-opencode.git
+	kog-url-https = https://github.com/dorgonman/kano-opencode.git
+
+[kog-root-config]
+	push-remote = origin
+	protocol-priority = auto
+
 [submodule "skills/kano-agent-backlog-skill"]
 	path = skills/kano-agent-backlog-skill
 	url = https://github.com/dorgonman/kano-agent-backlog-skill/
@@ -6,9 +14,19 @@
 	url = https://github.com/dorgonman/kano-git-master-skill.git
 [submodule "src/oh-my-opencode"]
 	path = src/oh-my-opencode
-	url = https://github.com/code-yeongyu/oh-my-opencode.git
+	url = https://github.com/dorgonman/oh-my-opencode.git
 	branch = dev
+	kog-remote-origin-ssh = git@github.com:dorgonman/oh-my-opencode.git
+	kog-remote-origin-https = https://github.com/dorgonman/oh-my-opencode.git
+	kog-remote-upstream = https://github.com/code-yeongyu/oh-my-opencode.git
+	kog-push-remote = origin
+	kog-protocol-priority = auto
 [submodule "src/opencode"]
 	path = src/opencode
-	url = https://github.com/anomalyco/opencode.git
+	url = https://github.com/dorgonman/opencode.git
 	branch = dev
+	kog-remote-origin-ssh = git@github.com:dorgonman/opencode.git
+	kog-remote-origin-https = https://github.com/dorgonman/opencode.git
+	kog-remote-upstream = https://github.com/anomalyco/opencode.git
+	kog-push-remote = origin
+	kog-protocol-priority = auto
