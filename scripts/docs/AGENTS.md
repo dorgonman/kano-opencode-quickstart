@@ -15,7 +15,7 @@ kano-opencode-quickstart/
 │   │   ├── setup-upstream.sh  # Configure upstream remotes
 │   │   ├── sync-submodules.sh # Sync with upstream (merge)
 │   │   └── rebase-submodules.sh # Rebase onto upstream
-│   ├── server/                # OpenCode server lifecycle
+│   ├── user-mode/             # OpenCode server lifecycle
 │   │   ├── opencode-server.sh # Core: start/stop/status + Tailscale Serve
 │   │   ├── start-local.sh     # Localhost mode
 │   │   ├── start-tailnet.sh   # Tailscale mode
@@ -45,8 +45,8 @@ kano-opencode-quickstart/
 | Task | Location | Notes |
 |------|----------|-------|
 | Start server (auto) | `quickstart.sh` | Tailscale if available, else localhost |
-| Start server (manual) | `scripts/server/start-*.sh` | Local/tailnet/auth modes |
-| Core server logic | `scripts/server/opencode-server.sh` | 465 lines, handles all modes + Tailscale Serve |
+| Start server (manual) | `scripts/user-mode/start-*.sh` | Local/tailnet/auth modes |
+| Core server logic | `scripts/user-mode/opencode-server.sh` | 465 lines, handles all modes + Tailscale Serve |
 | Git workflows | `scripts/git/*.sh` | Submodule sync/rebase with upstream |
 | Setup dependencies | `scripts/deps/prerequisite.{sh,ps1}` | First-run: install .opencode/node_modules |
 | Development mode | `scripts/dev-mode/quickstart-dev.sh` | Run OpenCode from source |
@@ -113,22 +113,22 @@ kano-opencode-quickstart/
 ./quickstart.sh
 
 # Local only (no auth, localhost:4096)
-./scripts/server/start-local.sh
+./scripts/user-mode/start-local.sh
 opencode attach localhost:4096
 
 # Tailnet only (Tailscale required)
-./scripts/server/start-tailnet.sh
+./scripts/user-mode/start-tailnet.sh
 tailscale serve status
 
 # LAN with basic auth
 export OPENCODE_SERVER_PASSWORD='change-me'
-./scripts/server/start-auth.sh --port 4096
+./scripts/user-mode/start-auth.sh --port 4096
 
 # Stop server + reset Tailscale Serve
-./scripts/server/stop.sh
+./scripts/user-mode/stop.sh
 
 # Check status
-./scripts/server/status.sh
+./scripts/user-mode/status.sh
 
 # Git workflows (submodule management)
 ./scripts/git/setup-upstream.sh      # Setup upstream remotes (once)
@@ -184,7 +184,7 @@ The scripts directory was reorganized on 2026-02-12 for better maintainability:
 
 **Old paths → New paths:**
 - `scripts/git-*.sh` → `scripts/git/*.sh`
-- `scripts/start-server-*.sh` → `scripts/server/start-*.sh`
+- `scripts/start-server-*.sh` → `scripts/user-mode/start-*.sh`
 - `scripts/prerequisite.*` → `scripts/deps/prerequisite.*`
 - `scripts/kill-port.sh` → `scripts/utils/kill-port.sh`
 - `scripts/*.md` → `scripts/docs/*.md`

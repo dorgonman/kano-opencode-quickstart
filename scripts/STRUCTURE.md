@@ -15,7 +15,7 @@ scripts/
 │   ├── sync-submodules.sh             # Sync with upstream (merge)
 │   └── rebase-submodules.sh           # Rebase onto upstream
 │
-├── server/                            # OpenCode Server Scripts
+├── user-mode/                         # OpenCode Server Scripts
 │   ├── opencode-server.sh             # Core server logic (465 lines)
 │   ├── start-local.sh                 # Start on localhost
 │   ├── start-tailnet.sh               # Start with Tailscale
@@ -37,7 +37,15 @@ scripts/
 │   └── update-opencode.sh             # Update OpenCode
 │
 ├── dev-mode/                          # Development Mode
-│   └── quickstart-dev.sh              # Run OpenCode from source
+│   ├── quickstart-dev.sh              # Run OpenCode from source
+│   ├── start-local.sh                 # Start dev server on localhost
+│   ├── start-tailnet.sh               # Start dev server with Tailscale
+│   ├── start-auth.sh                  # Start dev server with basic auth
+│   ├── stop.sh                        # Stop dev server
+│   └── status.sh                      # Dev server status
+│
+├── shared/                             # Shared Script Helpers
+│   └── server-common.sh               # Common server helpers (dev + user)
 │
 ├── windows/                           # Windows-Specific Scripts
 │   ├── AGENTS.md                      # Windows agent instructions
@@ -58,15 +66,16 @@ scripts/
 
 ```
 git/        : 5 files (3 scripts + 2 docs)
-server/     : 7 files (7 scripts)
+user-mode/  : 7 files (7 scripts)
 deps/       : 5 files (3 .sh + 2 .ps1)
 utils/      : 3 files (3 scripts)
-dev-mode/   : 1 file  (1 script)
+dev-mode/   : 6 files (6 scripts)
+shared/     : 1 file  (1 script)
 windows/    : 6 files (5 .ps1 + 1 doc)
 docs/       : 5 files (5 docs)
 root/       : 3 files (3 docs)
 ────────────────────────────────
-Total       : 35 files
+Total       : 41 files
 ```
 
 ## Script Categories
@@ -87,7 +96,7 @@ Total       : 35 files
 
 **Dependencies**: kano-git-master-skill helper library
 
-### 🚀 Server Management (server/)
+### 🚀 Server Management (user-mode/)
 
 **Purpose**: OpenCode server lifecycle management
 
@@ -138,8 +147,11 @@ Total       : 35 files
 
 **Purpose**: Run OpenCode from source code
 
-**Key Script**:
+**Key Scripts**:
 - `quickstart-dev.sh` - Integrated development workflow
+- `start-*.sh` - Dev server modes (local/tailnet/auth)
+- `stop.sh` - Dev server shutdown
+- `status.sh` - Dev server status
 
 **Features**:
 - Git workflow integration (-U/-R flags)
@@ -151,6 +163,13 @@ Total       : 35 files
 - OpenCode development
 - Plugin development
 - Testing changes
+
+### 🧩 Shared Helpers (shared/)
+
+**Purpose**: Common server helpers used by dev and user modes
+
+**Key Script**:
+- `server-common.sh` - Tailscale, auth, and port utilities
 
 ### 🪟 Windows Support (windows/)
 
@@ -211,15 +230,15 @@ Total       : 35 files
 ./quickstart.sh
 
 # Or specific mode
-./scripts/server/start-local.sh
-./scripts/server/start-tailnet.sh
-./scripts/server/start-auth.sh
+./scripts/user-mode/start-local.sh
+./scripts/user-mode/start-tailnet.sh
+./scripts/user-mode/start-auth.sh
 
 # Stop
-./scripts/server/stop.sh
+./scripts/user-mode/stop.sh
 
 # Status
-./scripts/server/status.sh
+./scripts/user-mode/status.sh
 ```
 
 ### Pull Request Preparation
@@ -265,7 +284,7 @@ See [MIGRATION-PATHS.md](MIGRATION-PATHS.md) for detailed migration guide.
 
 **Quick Summary**:
 - Git scripts: `scripts/git-*.sh` → `scripts/git/*.sh`
-- Server scripts: `scripts/start-server-*.sh` → `scripts/server/start-*.sh`
+- Server scripts: `scripts/start-server-*.sh` → `scripts/user-mode/start-*.sh`
 - Dependency scripts: `scripts/prerequisite.*` → `scripts/deps/prerequisite.*`
 - Utility scripts: `scripts/kill-port.sh` → `scripts/utils/kill-port.sh`
 - Documentation: `scripts/*.md` → `scripts/docs/*.md`

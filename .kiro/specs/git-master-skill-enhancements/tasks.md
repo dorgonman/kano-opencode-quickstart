@@ -1,5 +1,71 @@
 # Tasks: Git Master Skill Enhancements
 
+## Phase -1: Priority - Quick Update Script (IMMEDIATE NEED)
+
+### 0.1. Create update-repo.sh for single repo + submodules update
+Create a simple, focused script to update a repository and all its submodules to the latest version.
+
+**Details**:
+- Create `skills/kano-git-master-skill/scripts/update-repo.sh`
+- Source git-helpers.sh for common operations
+- Accept optional path argument (default: current directory)
+- Implement simple, clear interface: `./update-repo.sh [path]`
+- Use `gith_stash_create()` and `gith_stash_pop()` for dirty repos
+- Use `gith_get_current_branch()` for branch detection
+- Use `gith_get_default_branch()` for fallback
+- Use `gith_fetch_remote()` for fetching
+- Update root repository first
+- Then update all submodules recursively with `git submodule update --init --recursive --remote`
+- Clear progress output for each step
+- Works with any Git remote provider (GitHub, GitLab, Azure Repos, Bitbucket, self-hosted, etc.)
+
+**Acceptance Criteria**:
+- Script updates root repository to latest
+- Script updates all submodules to latest
+- Handles uncommitted changes (stash/pop)
+- Smart branch detection (current branch or default)
+- Clear error messages
+- Works from any directory (when path provided)
+- Works with any Git hosting provider
+- Simple usage: `./update-repo.sh` or `./update-repo.sh /path/to/repo`
+
+**Usage Examples**:
+```bash
+# Update current directory
+cd /path/to/my-repo
+./update-repo.sh
+
+# Update specific repository
+./update-repo.sh /path/to/my-repo
+
+# Dry-run mode
+./update-repo.sh --dry-run
+
+# Specify remote (default: origin)
+./update-repo.sh --remote upstream
+```
+
+### 0.2. Test update-repo.sh
+Manually test the update script with various scenarios.
+
+**Details**:
+- Test with clean working tree
+- Test with uncommitted changes (stash/pop)
+- Test with submodules
+- Test with nested submodules
+- Test with no submodules
+- Test with detached HEAD
+- Test with custom remote
+- Test dry-run mode
+- Test error cases (not a git repo, network failure)
+
+**Acceptance Criteria**:
+- All test scenarios pass
+- Stash/pop works correctly
+- Submodules are updated properly
+- Error messages are clear and actionable
+- Dry-run shows correct operations
+
 ## Phase 0: Shared Helper Library
 
 ### 1. Create git-helpers.sh library structure

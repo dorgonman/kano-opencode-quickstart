@@ -37,3 +37,8 @@ backlog_root = "_kano/backlog/products/kano-opencode-quickstart"
 name = "admin-init-smoke2"
 prefix = "AI"
 backlog_root = "_kano/backlog/products/admin-init-smoke2"
+# Added by kano-backlog admin init (2026-02-14 00:19:12Z, agent=kiro)
+[products.kano-git-cli]
+name = "kano-git-cli"
+prefix = "KG"
+backlog_root = "_kano/backlog/products/kano-git-cli"

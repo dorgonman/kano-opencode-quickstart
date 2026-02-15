@@ -13,6 +13,7 @@ All scripts will be placed in `skills/kano-git-master-skill/scripts/` following 
 
 ### New Scripts
 
+0. **update-repo.sh** - PRIORITY: Simple update for single repo + all submodules
 1. **clone-with-upstream.sh** - Clone repository with optional upstream remote
 2. **rebase-to-upstream-latest.sh** - Renamed from rebase-to-latest-main.sh
 3. **discover-repos.sh** - Discover all Git repositories in workspace
@@ -25,6 +26,82 @@ All scripts will be placed in `skills/kano-git-master-skill/scripts/` following 
 - **sync-root-and-submodules.sh** - Refactored to use git-helpers.sh
 
 ## Detailed Design
+
+### -1. update-repo.sh (PRIORITY - Simple Single Repo + Submodules Update)
+
+**Purpose**: Quickly update a single repository and all its submodules to the latest version. This is the immediate need and highest priority script.
+
+**Location**: `skills/kano-git-master-skill/scripts/update-repo.sh`
+
+**Interface**:
+```bash
+update-repo.sh [path] [options]
+
+Arguments:
+  path              Repository path (default: current directory)
+
+Options:
+  --remote <name>   Remote name (default: origin)
+  --no-stash        Fail if there are local changes
+  --dry-run         Show what would be done
+  -h, --help        Show help
+```
+
+**Algorithm**:
+1. Validate target path is a Git repository
+2. Change to repository directory
+3. Check for uncommitted changes:
+   - If changes exist and --no-stash not set: create stash
+   - If changes exist and --no-stash set: error and exit
+4. Fetch from remote
+5. Get current branch name
+6. Check if current branch exists on remote:
+   - If exists: rebase onto remote/branch
+   - If not exists: detect default branch and rebase onto it
+7. Update submodules:
+   - `git submodule update --init --recursive --remote`
+8. Pop stash if created
+9. Report summary
+
+**Helper Functions Used** (from git-helpers.sh):
+- `gith_is_git_repo()` - Validate it's a git repo
+- `gith_has_changes()` - Check for uncommitted changes
+- `gith_stash_create()` - Create stash with tracking
+- `gith_stash_pop()` - Pop stash with error handling
+- `gith_fetch_remote()` - Fetch with error handling
+- `gith_get_current_branch()` - Get current branch
+- `gith_branch_exists_on_remote()` - Check if branch exists
+- `gith_get_default_branch()` - Detect default branch
+- `gith_has_remote()` - Check if remote exists
+
+**Error Handling**:
+- Path is not a Git repository
+- Remote doesn't exist
+- Network failures
+- Rebase conflicts (keep stash, provide recovery instructions)
+- Submodule update failures
+
+**Progress Output**:
+```
+[INFO] Updating repository: /path/to/repo
+[INFO] Creating stash: auto-stash-update-repo
+[INFO] Fetching from remote: origin
+[INFO] Current branch: main
+[INFO] Rebasing onto: origin/main
+[INFO] Updating submodules...
+[INFO] Submodule 'public-project': checked out 'abc123'
+[INFO] Submodule 'vendor/lib': checked out 'def456'
+[INFO] Popping stash: stash@{0}
+[INFO] Update complete!
+```
+
+**Comparison with Other Scripts**:
+- Simpler than `update-repo-smart.sh` (focuses on single repo, not discovery)
+- Simpler than `update-workspace-repos.sh` (no multi-repo orchestration)
+- More focused than `sync-root-and-submodules.sh` (no URL sync complexity)
+- **This is the "quick and simple" solution for the immediate need**
+
+**Note**: Works with any Git remote provider (GitHub, GitLab, Azure Repos, Bitbucket, self-hosted Git servers, etc.)
 
 ### 0. git-helpers.sh (Shared Library)
 
@@ -851,16 +928,17 @@ For `rebase-to-latest-main.sh` → `rebase-to-upstream-latest.sh`:
 
 ## Implementation Order
 
-1. **Phase 0**: Create git-helpers.sh library (foundation for all scripts)
-2. **Phase 1**: Implement clone-with-upstream.sh (standalone, no dependencies)
-3. **Phase 2**: Rename and enhance rebase-to-upstream-latest.sh
-4. **Phase 3**: Implement discover-repos.sh (uses git-helpers.sh)
-5. **Phase 4**: Implement update-workspace-repos.sh (uses discover-repos.sh + git-helpers.sh)
-6. **Phase 5**: Implement foreach-repo.sh (uses discover-repos.sh + git-helpers.sh)
-7. **Phase 6**: Implement status-all-repos.sh (uses discover-repos.sh + git-helpers.sh)
-8. **Phase 7**: Refactor update-repo-smart.sh to use git-helpers.sh
-9. **Phase 8**: Refactor sync-root-and-submodules.sh to use git-helpers.sh
-10. **Phase 9**: Documentation and testing
+1. **Phase -1**: Create update-repo.sh (PRIORITY - immediate need for simple repo + submodules update)
+2. **Phase 0**: Create git-helpers.sh library (foundation for all scripts) - ALREADY DONE
+3. **Phase 1**: Implement clone-with-upstream.sh (standalone, no dependencies)
+4. **Phase 2**: Rename and enhance rebase-to-upstream-latest.sh
+5. **Phase 3**: Implement discover-repos.sh (uses git-helpers.sh)
+6. **Phase 4**: Implement update-workspace-repos.sh (uses discover-repos.sh + git-helpers.sh)
+7. **Phase 5**: Implement foreach-repo.sh (uses discover-repos.sh + git-helpers.sh)
+8. **Phase 6**: Implement status-all-repos.sh (uses discover-repos.sh + git-helpers.sh)
+9. **Phase 7**: Refactor update-repo-smart.sh to use git-helpers.sh
+10. **Phase 8**: Refactor sync-root-and-submodules.sh to use git-helpers.sh
+11. **Phase 9**: Documentation and testing
 
 ## Dependencies
 

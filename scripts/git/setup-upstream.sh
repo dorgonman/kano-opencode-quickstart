@@ -17,10 +17,10 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
-REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd -P)"
+REPO_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd -P)"
 
 # Source git-helpers.sh from kano-git-master-skill
-GIT_HELPERS="${REPO_ROOT}/skills/kano-git-master-skill/scripts/git-helpers.sh"
+GIT_HELPERS="${REPO_ROOT}/skills/kano-git-master-skill/scripts/lib/git-helpers.sh"
 if [[ ! -f "$GIT_HELPERS" ]]; then
   echo "ERROR: git-helpers.sh not found at: $GIT_HELPERS" >&2
   echo "       Please ensure kano-git-master-skill submodule is initialized" >&2
@@ -151,15 +151,15 @@ SUCCESS_COUNT=0
 FAIL_COUNT=0
 
 if setup_upstream "$OPENCODE_PATH" "$OPENCODE_UPSTREAM"; then
-  ((SUCCESS_COUNT++))
+  ((SUCCESS_COUNT++)) || true
 else
-  ((FAIL_COUNT++))
+  ((FAIL_COUNT++)) || true
 fi
 
 if setup_upstream "$OH_MY_OPENCODE_PATH" "$OH_MY_OPENCODE_UPSTREAM"; then
-  ((SUCCESS_COUNT++))
+  ((SUCCESS_COUNT++)) || true
 else
-  ((FAIL_COUNT++))
+  ((FAIL_COUNT++)) || true
 fi
 
 # Summary

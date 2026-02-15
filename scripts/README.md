@@ -7,10 +7,11 @@ This directory contains all automation scripts for the kano-opencode-quickstart 
 ```
 scripts/
 ├── git/                    # Git workflow scripts for submodule management
-├── server/                 # OpenCode server lifecycle scripts
+├── user-mode/              # OpenCode server lifecycle scripts
 ├── deps/                   # Dependency management scripts
 ├── utils/                  # Utility scripts
 ├── dev-mode/              # Development mode scripts
+├── shared/                 # Shared helpers (dev + user)
 ├── windows/               # Windows-specific scripts
 └── docs/                  # Documentation files
 ```
@@ -67,7 +68,7 @@ Git workflow scripts for managing `src/` submodules (opencode and oh-my-opencode
 ./git/rebase-submodules.sh
 ```
 
-### 📁 server/
+### 📁 user-mode/
 
 OpenCode server lifecycle management scripts.
 
@@ -83,16 +84,16 @@ OpenCode server lifecycle management scripts.
 **Usage:**
 ```bash
 # Start local server
-./server/start-local.sh
+./user-mode/start-local.sh
 
 # Start with Tailscale
-./server/start-tailnet.sh
+./user-mode/start-tailnet.sh
 
 # Stop server
-./server/stop.sh
+./user-mode/stop.sh
 
 # Check status
-./server/status.sh
+./user-mode/status.sh
 ```
 
 ### 📁 deps/
@@ -155,6 +156,13 @@ Development mode scripts for running OpenCode from source.
 ./dev-mode/quickstart-dev.sh -S
 ```
 
+### 📁 shared/
+
+Shared helpers used by dev-mode and user-mode.
+
+**Scripts:**
+- `server-common.sh` - Tailscale, auth, and port utilities
+
 ### 📁 windows/
 
 Windows-specific scripts (PowerShell).
@@ -212,15 +220,15 @@ cd ..
 ./quickstart.sh
 
 # Or use specific mode
-./scripts/server/start-local.sh      # Localhost only
-./scripts/server/start-tailnet.sh    # Tailscale
-./scripts/server/start-auth.sh       # LAN with auth
+./scripts/user-mode/start-local.sh      # Localhost only
+./scripts/user-mode/start-tailnet.sh    # Tailscale
+./scripts/user-mode/start-auth.sh       # LAN with auth
 
 # Stop server
-./scripts/server/stop.sh
+./scripts/user-mode/stop.sh
 
 # Check status
-./scripts/server/status.sh
+./scripts/user-mode/status.sh
 ```
 
 ### Dependency Management
@@ -246,11 +254,11 @@ If you have existing scripts or documentation that reference old paths, update t
 - `./scripts/git-rebase-submodules.sh` → `./scripts/git/rebase-submodules.sh`
 
 ### Server Scripts
-- `./scripts/start-server-local.sh` → `./scripts/server/start-local.sh`
-- `./scripts/start-server-tailnet.sh` → `./scripts/server/start-tailnet.sh`
-- `./scripts/start-server-auth.sh` → `./scripts/server/start-auth.sh`
-- `./scripts/stop.sh` → `./scripts/server/stop.sh`
-- `./scripts/status.sh` → `./scripts/server/status.sh`
+- `./scripts/start-server-local.sh` → `./scripts/user-mode/start-local.sh`
+- `./scripts/start-server-tailnet.sh` → `./scripts/user-mode/start-tailnet.sh`
+- `./scripts/start-server-auth.sh` → `./scripts/user-mode/start-auth.sh`
+- `./scripts/stop.sh` → `./scripts/user-mode/stop.sh`
+- `./scripts/status.sh` → `./scripts/user-mode/status.sh`
 
 ### Dependency Scripts
 - `./scripts/prerequisite.sh` → `./scripts/deps/prerequisite.sh`
@@ -290,9 +298,9 @@ skills/kano-git-master-skill/scripts/git-helpers.sh
 ```
 quickstart.sh (root)
     ↓ calls
-scripts/server/start-*.sh
+scripts/user-mode/start-*.sh
     ↓ calls
-scripts/server/opencode-server.sh
+scripts/user-mode/opencode-server.sh
     ↓ manages
 OpenCode server + Tailscale Serve
 ```

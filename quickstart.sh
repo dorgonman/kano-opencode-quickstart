@@ -64,7 +64,7 @@ echo "INFO: Attach (CLI root = workspace):" >&2
 printf '      cd "%s" && opencode attach localhost:%s\n' "$WORKSPACE_PATH" "$ATTACH_PORT" >&2
 
 if command -v tailscale >/dev/null 2>&1; then
-  exec "${SCRIPT_DIR}/scripts/server/start-tailnet.sh" --workspace "$WORKSPACE_PATH" "$@"
+  exec "${SCRIPT_DIR}/scripts/user-mode/start-tailnet.sh" --workspace "$WORKSPACE_PATH" "$@"
 fi
 
-exec "${SCRIPT_DIR}/scripts/server/start-local.sh" --workspace "$WORKSPACE_PATH" "$@"
+exec "${SCRIPT_DIR}/scripts/user-mode/start-local.sh" --workspace "$WORKSPACE_PATH" "$@"

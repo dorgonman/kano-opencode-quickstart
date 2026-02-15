@@ -5,7 +5,14 @@
 		},
 		{
 			"path": "../kano-agent-backlog-skill-demo"
+		},
+		{
+			"path": "../kano-agent-backlog-skill-demo/scripts/docs"
+		},
+		{
+			"path": "../kano-agent-backlog-skill-demo/.github/workflows"
 		}
 	],
-	"settings": {}
+	"settings": {
+	}
 }

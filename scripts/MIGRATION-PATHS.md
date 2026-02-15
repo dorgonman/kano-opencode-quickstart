@@ -11,10 +11,11 @@ Scripts have been moved into categorized subdirectories:
 ```
 scripts/
 ├── git/        # Git workflow scripts
-├── server/     # OpenCode server scripts
+├── user-mode/  # OpenCode server scripts
 ├── deps/       # Dependency management
 ├── utils/      # Utility scripts
 ├── dev-mode/   # Development mode (unchanged)
+├── shared/     # Shared helpers (dev + user)
 ├── windows/    # Windows-specific (unchanged)
 └── docs/       # Documentation files
 ```
@@ -35,13 +36,13 @@ scripts/
 
 | Old Path | New Path |
 |----------|----------|
-| `scripts/opencode-server.sh` | `scripts/server/opencode-server.sh` |
-| `scripts/start-server-local.sh` | `scripts/server/start-local.sh` |
-| `scripts/start-server-tailnet.sh` | `scripts/server/start-tailnet.sh` |
-| `scripts/start-server-auth.sh` | `scripts/server/start-auth.sh` |
-| `scripts/stop.sh` | `scripts/server/stop.sh` |
-| `scripts/status.sh` | `scripts/server/status.sh` |
-| `scripts/attach-localhost.sh` | `scripts/server/attach-localhost.sh` |
+| `scripts/opencode-server.sh` | `scripts/user-mode/opencode-server.sh` |
+| `scripts/start-server-local.sh` | `scripts/user-mode/start-local.sh` |
+| `scripts/start-server-tailnet.sh` | `scripts/user-mode/start-tailnet.sh` |
+| `scripts/start-server-auth.sh` | `scripts/user-mode/start-auth.sh` |
+| `scripts/stop.sh` | `scripts/user-mode/stop.sh` |
+| `scripts/status.sh` | `scripts/user-mode/status.sh` |
+| `scripts/attach-localhost.sh` | `scripts/user-mode/attach-localhost.sh` |
 
 ### Dependency Scripts
 
@@ -75,9 +76,9 @@ scripts/
 
 The following scripts have been automatically updated to use new paths:
 
-✅ `quickstart.sh` - Updated to reference `scripts/server/` and `scripts/deps/`  
+✅ `quickstart.sh` - Updated to reference `scripts/user-mode/` and `scripts/deps/`  
 ✅ `scripts/dev-mode/quickstart-dev.sh` - Updated to reference `scripts/git/`  
-✅ `scripts/server/*.sh` - Already using relative paths (no changes needed)
+✅ `scripts/user-mode/*.sh` - Already using relative paths (no changes needed)
 
 ## How to Update Your Scripts
 
@@ -93,7 +94,7 @@ The following scripts have been automatically updated to use new paths:
 **After:**
 ```bash
 ./scripts/git/setup-upstream.sh
-./scripts/server/start-local.sh
+./scripts/user-mode/start-local.sh
 ./scripts/deps/prerequisite.sh install
 ```
 
@@ -108,11 +109,11 @@ scripts/git-sync-submodules.sh → scripts/git/sync-submodules.sh
 scripts/git-rebase-submodules.sh → scripts/git/rebase-submodules.sh
 
 # Server scripts
-scripts/start-server-local.sh → scripts/server/start-local.sh
-scripts/start-server-tailnet.sh → scripts/server/start-tailnet.sh
-scripts/start-server-auth.sh → scripts/server/start-auth.sh
-scripts/stop.sh → scripts/server/stop.sh
-scripts/status.sh → scripts/server/status.sh
+scripts/start-server-local.sh → scripts/user-mode/start-local.sh
+scripts/start-server-tailnet.sh → scripts/user-mode/start-tailnet.sh
+scripts/start-server-auth.sh → scripts/user-mode/start-auth.sh
+scripts/stop.sh → scripts/user-mode/stop.sh
+scripts/status.sh → scripts/user-mode/status.sh
 
 # Dependency scripts
 scripts/prerequisite.sh → scripts/deps/prerequisite.sh
@@ -142,11 +143,11 @@ scripts/update-opencode.sh → scripts/utils/update-opencode.sh
 ./scripts/git/rebase-submodules.sh
 
 # Server operations
-./scripts/server/start-local.sh
-./scripts/server/start-tailnet.sh
-./scripts/server/start-auth.sh
-./scripts/server/stop.sh
-./scripts/server/status.sh
+./scripts/user-mode/start-local.sh
+./scripts/user-mode/start-tailnet.sh
+./scripts/user-mode/start-auth.sh
+./scripts/user-mode/stop.sh
+./scripts/user-mode/status.sh
 
 # Dependency management
 ./scripts/deps/prerequisite.sh install
@@ -214,11 +215,11 @@ cd scripts
 ln -s git/setup-upstream.sh git-setup-upstream.sh
 ln -s git/sync-submodules.sh git-sync-submodules.sh
 ln -s git/rebase-submodules.sh git-rebase-submodules.sh
-ln -s server/start-local.sh start-server-local.sh
-ln -s server/start-tailnet.sh start-server-tailnet.sh
-ln -s server/start-auth.sh start-server-auth.sh
-ln -s server/stop.sh stop.sh
-ln -s server/status.sh status.sh
+ln -s user-mode/start-local.sh start-server-local.sh
+ln -s user-mode/start-tailnet.sh start-server-tailnet.sh
+ln -s user-mode/start-auth.sh start-server-auth.sh
+ln -s user-mode/stop.sh stop.sh
+ln -s user-mode/status.sh status.sh
 ln -s deps/prerequisite.sh prerequisite.sh
 ln -s deps/prerequisite.ps1 prerequisite.ps1
 ln -s utils/kill-port.sh kill-port.sh
