@@ -104,25 +104,25 @@ Rebases submodules onto their upstream repositories. This creates a cleaner, lin
 
 ### 4. Developer Mode (Integrated Workflow)
 
-**Script**: `./scripts/dev-mode/quickstart-dev.sh`
+**Script**: `./scripts/dev-mode/start-build-native.sh`
 
 Runs OpenCode from source with integrated Git workflow options.
 
 ```bash
 # Start without syncing
-./scripts/dev-mode/quickstart-dev.sh
+./scripts/dev-mode/start-build-native.sh
 
 # Sync with upstream (merge strategy)
-./scripts/dev-mode/quickstart-dev.sh -U
+./scripts/dev-mode/start-build-native.sh -U
 
 # Rebase onto upstream
-./scripts/dev-mode/quickstart-dev.sh -R
+./scripts/dev-mode/start-build-native.sh -R
 
 # Skip sync entirely
-./scripts/dev-mode/quickstart-dev.sh -S
+./scripts/dev-mode/start-build-native.sh -S
 
 # Specify workspace path
-./scripts/dev-mode/quickstart-dev.sh -U /path/to/workspace
+./scripts/dev-mode/start-build-native.sh -U /path/to/workspace
 ```
 
 **What it does:**
@@ -147,7 +147,7 @@ git add .
 git commit -m "Your changes"
 
 # 3. Run OpenCode to test
-./scripts/dev-mode/quickstart-dev.sh
+./scripts/dev-mode/start-build-native.sh
 
 # 4. Push to your fork
 cd src/opencode
@@ -239,7 +239,7 @@ git stash drop stash@{0}      # Remove stash after successful apply
 ```bash
 # Make scripts executable
 chmod +x scripts/git-*.sh
-chmod +x scripts/dev-mode/quickstart-dev.sh
+chmod +x scripts/dev-mode/start-build-native.sh
 ```
 
 ## Advanced Usage

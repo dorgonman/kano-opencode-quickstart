@@ -28,7 +28,7 @@ scripts/
 ./git/setup-upstream.sh
 
 # 3. Start OpenCode server
-../quickstart.sh
+../start-native.sh
 ```
 
 ### Daily Development
@@ -38,7 +38,7 @@ scripts/
 ./git/sync-submodules.sh
 
 # Run OpenCode from source
-./dev-mode/quickstart-dev.sh -U
+./dev-mode/start-build-native.sh -U
 ```
 
 ## Directory Details
@@ -139,21 +139,21 @@ Utility scripts for various tasks.
 Development mode scripts for running OpenCode from source.
 
 **Scripts:**
-- `quickstart-dev.sh` - Run OpenCode from source with Git workflow integration
+- `start-build-native.sh` - Run OpenCode from source with Git workflow integration
 
 **Usage:**
 ```bash
 # Run without sync
-./dev-mode/quickstart-dev.sh
+./dev-mode/start-build-native.sh
 
 # Sync and run (merge)
-./dev-mode/quickstart-dev.sh -U
+./dev-mode/start-build-native.sh -U
 
 # Rebase and run
-./dev-mode/quickstart-dev.sh -R
+./dev-mode/start-build-native.sh -R
 
 # Skip sync
-./dev-mode/quickstart-dev.sh -S
+./dev-mode/start-build-native.sh -S
 ```
 
 ### 📁 shared/
@@ -200,7 +200,7 @@ Documentation files.
 ./git/sync-submodules.sh
 
 # 2. Run from source
-./dev-mode/quickstart-dev.sh
+./dev-mode/start-build-native.sh
 
 # 3. Make changes in src/opencode or src/oh-my-opencode
 cd ../src/opencode
@@ -217,7 +217,7 @@ git push origin dev
 ```bash
 # Start server (auto-detect mode)
 cd ..
-./quickstart.sh
+./start-native.sh
 
 # Or use specific mode
 ./scripts/user-mode/start-local.sh      # Localhost only
@@ -296,7 +296,7 @@ skills/kano-git-master-skill/scripts/git-helpers.sh
 ### Server Scripts Architecture
 
 ```
-quickstart.sh (root)
+start-native.sh (root)
     ↓ calls
 scripts/user-mode/start-*.sh
     ↓ calls

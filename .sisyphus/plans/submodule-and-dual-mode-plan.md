@@ -64,27 +64,27 @@ python skills/kano-agent-backlog-skill/scripts/kano-backlog admin sync-sequences
    - Goal: 创建dev-mode启动脚本，支持从src/opencode直接运行
    - Approach:
      - 创建 `scripts/dev-mode/` 目录
-     - 实现 `quickstart-dev.sh` 脚本
+    - 实现 `start-build-native.sh` 脚本
      - 支持 `-U/--update` 选项：fetch latest from upstream/origin and rebase
      - 支持 `-S/--skip-sync` 选项：跳过submodule update/fetch/checkout
      - 支持 `-h/--help` 选项：显示帮助信息
      - 使用 `bun run` 或类似方式直接运行src/opencode的代码
    - Acceptance Criteria:
-     - `./quickstart-dev.sh` 可以启动OpenCode server
-     - `./quickstart-dev.sh -U` 可以更新submodules并rebase
-     - `./quickstart-dev.sh -S` 跳过submodule同步
-     - `./quickstart-dev.sh -h` 显示完整帮助信息
+    - `./start-build-native.sh` 可以启动OpenCode server
+    - `./start-build-native.sh -U` 可以更新submodules并rebase
+    - `./start-build-native.sh -S` 跳过submodule同步
+    - `./start-build-native.sh -h` 显示完整帮助信息
    - Risks: 需要确保dev mode的依赖安装流程
 
 3. **KO-TSK-0003: 保持使用者模式（User Mode）为默认模式**
    - Context: 大多数用户应该使用已安装的OpenCode CLI，不需要source code
-   - Goal: 确保现有的quickstart.sh继续使用系统安装的opencode CLI
+  - Goal: 确保现有的start-native.sh继续使用系统安装的opencode CLI
    - Approach:
-     - 保持现有 `quickstart.sh` 不变（或minimal changes）
+    - 保持现有 `start-native.sh` 不变（或minimal changes）
      - 确保它使用 `opencode` 命令（从PATH）
      - 在README中明确区分两种模式的使用场景
    - Acceptance Criteria:
-     - `./quickstart.sh` 使用系统安装的opencode CLI
+    - `./start-native.sh` 使用系统安装的opencode CLI
      - 不依赖src/下的source code
      - README清楚说明user mode vs dev mode的差异
    - Risks: 无
@@ -108,7 +108,7 @@ python skills/kano-agent-backlog-skill/scripts/kano-backlog admin sync-sequences
    - Context: 开发者模式需要能够同步upstream的最新代码
    - Goal: 实现可靠的submodule更新和rebase逻辑
    - Approach:
-     - 在 `quickstart-dev.sh` 中实现 `-U` 选项的逻辑：
+    - 在 `start-build-native.sh` 中实现 `-U` 选项的逻辑：
        - `git submodule update --remote --merge` 或类似命令
        - 对每个submodule执行 `git fetch upstream && git rebase upstream/main`
        - 处理rebase冲突的情况
@@ -145,8 +145,8 @@ python skills/kano-agent-backlog-skill/scripts/kano-backlog admin sync-sequences
 
 **验证清单**：
 - [x] Git submodules正确配置
-- [x] User mode (quickstart.sh) 正常工作
-- [x] Developer mode (quickstart-dev.sh) 正常工作
+- [x] User mode (start-native.sh) 正常工作
+- [x] Developer mode (start-build-native.sh) 正常工作
 - [x] `-U` 选项可以更新submodules
 - [x] `-S` 选项可以跳过submodule同步
 - [x] `-h` 选项显示帮助信息

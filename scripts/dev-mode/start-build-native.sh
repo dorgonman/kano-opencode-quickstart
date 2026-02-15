@@ -77,28 +77,28 @@ General:
 
 Examples:
   # TUI mode (default)
-  ./quickstart-dev.sh
+  ./start-build-native.sh
 
   # Server mode (local)
-  ./quickstart-dev.sh --serve
+  ./start-build-native.sh --serve
 
   # Server mode + tailnet
-  ./quickstart-dev.sh --tailnet
+  ./start-build-native.sh --tailnet
 
   # Server background + custom port
-  ./quickstart-dev.sh --serve --bg --port 5096
+  ./start-build-native.sh --serve --bg --port 5096
 
   # LAN access (basic auth)
-  OPENCODE_SERVER_PASSWORD='change-me' ./quickstart-dev.sh --serve --host 0.0.0.0 --auth basic
+  OPENCODE_SERVER_PASSWORD='change-me' ./start-build-native.sh --serve --host 0.0.0.0 --auth basic
 
   # Stop background server
-  ./quickstart-dev.sh --stop
+  ./start-build-native.sh --stop
 
   # Sync submodules then start TUI
-  ./quickstart-dev.sh -U
+  ./start-build-native.sh -U
 
   # Specify workspace path
-  ./quickstart-dev.sh /path/to/workspace
+  ./start-build-native.sh /path/to/workspace
 EOF
 }
 

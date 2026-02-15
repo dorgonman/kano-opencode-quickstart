@@ -20,9 +20,9 @@ Created a family of dependency management scripts with consistent naming and int
 - ✅ Dry-run mode for previewing changes
 - ✅ Cross-platform support (Unix/Linux/macOS + Windows)
 
-#### Automatic Dependency Management in quickstart.sh
+#### Automatic Dependency Management in start-native.sh
 
-Enhanced `quickstart.sh` to automatically handle dependencies:
+Enhanced `start-native.sh` to automatically handle dependencies:
 
 - **First-time setup**: Automatically detects missing dependencies and runs `opencode-deps-install.sh`
 - **Subsequent runs**: Shows a tip about updating dependencies
@@ -80,7 +80,7 @@ Created comprehensive documentation:
 
 ### Files Modified
 
-- `quickstart.sh` - Added automatic dependency management
+- `start-native.sh` - Added automatic dependency management
 - `README.md` - Updated dependency management section
 - `.opencode/package.json` - Changed to use `"latest"` tag
 

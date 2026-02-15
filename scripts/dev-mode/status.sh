@@ -2,4 +2,4 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
-exec "${SCRIPT_DIR}/quickstart-dev.sh" --status "$@"
+exec "${SCRIPT_DIR}/start-build-native.sh" --status "$@"

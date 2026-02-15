@@ -10,13 +10,13 @@ Added comprehensive "Modes" section to README.md explaining:
    - For general users using official OpenCode release
    - Uses system-installed `opencode` CLI
    - No source code required
-   - Quick start: `./quickstart.sh`
+   - Quick start: `./start-native.sh`
 
 2. **Developer Mode**
    - For contributors running from source
    - Uses `src/opencode` submodule
    - Supports upstream synchronization
-   - Quick start: `./scripts/dev-mode/quickstart-dev.sh`
+   - Quick start: `./scripts/dev-mode/start-build-native.sh`
    - Options documented: `-U`, `-S`, `-h`
 
 3. **Prerequisites Section Updated**

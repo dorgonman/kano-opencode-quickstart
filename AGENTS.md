@@ -10,7 +10,7 @@ Shell-based OpenCode server launcher with Tailscale support. Bash + PowerShell s
 ## STRUCTURE
 ```
 kano-opencode-quickstart/
-├── quickstart.sh              # Entry: auto-detects tailnet vs local
+├── start-native.sh            # Entry: auto-detects tailnet vs local
 ├── scripts/                   # Server lifecycle + port utils
 │   ├── opencode-server.sh     # Core: start/stop/status OpenCode + Tailscale Serve
 │   ├── start-server-*.sh      # Wrappers: local/tailnet/auth modes
@@ -27,7 +27,7 @@ kano-opencode-quickstart/
 
 | Task | Location | Notes |
 |------|----------|-------|
-| Start server (auto) | `quickstart.sh` | Tailscale if available, else localhost |
+| Start server (auto) | `start-native.sh` | Tailscale if available, else localhost |
 | Start server (manual) | `scripts/start-server-*.sh` | Local/tailnet/auth modes |
 | Core server logic | `scripts/opencode-server.sh` | 465 lines, handles all modes + Tailscale Serve |
 | Windows service | `scripts/windows/tailnet-service.ps1` | NSSM/sc.exe wrapper (experimental) |
@@ -91,7 +91,7 @@ kano-opencode-quickstart/
 ./scripts/prerequisite.sh install
 
 # Auto mode (recommended)
-./quickstart.sh
+./start-native.sh
 
 # Local only (no auth, localhost:4096)
 ./scripts/start-server-local.sh

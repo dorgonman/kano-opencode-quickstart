@@ -37,7 +37,7 @@ scripts/
 │   └── update-opencode.sh             # Update OpenCode
 │
 ├── dev-mode/                          # Development Mode
-│   ├── quickstart-dev.sh              # Run OpenCode from source
+│   ├── start-build-native.sh          # Run OpenCode from source
 │   ├── start-local.sh                 # Start dev server on localhost
 │   ├── start-tailnet.sh               # Start dev server with Tailscale
 │   ├── start-auth.sh                  # Start dev server with basic auth
@@ -148,7 +148,7 @@ Total       : 41 files
 **Purpose**: Run OpenCode from source code
 
 **Key Scripts**:
-- `quickstart-dev.sh` - Integrated development workflow
+- `start-build-native.sh` - Integrated development workflow
 - `start-*.sh` - Dev server modes (local/tailnet/auth)
 - `stop.sh` - Dev server shutdown
 - `status.sh` - Dev server status
@@ -210,7 +210,7 @@ Total       : 41 files
 ./scripts/git/setup-upstream.sh
 
 # 3. Start server
-./quickstart.sh
+./start-native.sh
 ```
 
 ### Daily Development
@@ -220,14 +220,14 @@ Total       : 41 files
 ./scripts/git/sync-submodules.sh
 
 # Run from source
-./scripts/dev-mode/quickstart-dev.sh -U
+./scripts/dev-mode/start-build-native.sh -U
 ```
 
 ### Server Operations
 
 ```bash
 # Start (auto-detect mode)
-./quickstart.sh
+./start-native.sh
 
 # Or specific mode
 ./scripts/user-mode/start-local.sh

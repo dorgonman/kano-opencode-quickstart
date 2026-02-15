@@ -13,7 +13,7 @@
 ./scripts/git-rebase-submodules.sh
 
 # 3. Run OpenCode from source with sync
-./scripts/dev-mode/quickstart-dev.sh -U
+./scripts/dev-mode/start-build-native.sh -U
 ```
 
 ## What's New
@@ -30,7 +30,7 @@ This repository now includes Git wrapper scripts that use the **kano-git-master-
 | `git-setup-upstream.sh` | Configure upstream remotes | Once after cloning |
 | `git-sync-submodules.sh` | Fetch + merge from upstream | Daily development |
 | `git-rebase-submodules.sh` | Fetch + rebase onto upstream | Before pull requests |
-| `dev-mode/quickstart-dev.sh` | Run OpenCode from source | Development & testing |
+| `dev-mode/start-build-native.sh` | Run OpenCode from source | Development & testing |
 
 ## Detailed Usage
 
@@ -95,25 +95,25 @@ This repository now includes Git wrapper scripts that use the **kano-git-master-
 - Provides conflict resolution instructions
 - Ideal for preparing pull requests
 
-### 4. dev-mode/quickstart-dev.sh (Refactored)
+### 4. dev-mode/start-build-native.sh (Refactored)
 
 **Purpose**: Run OpenCode from source with integrated Git workflows
 
 ```bash
 # Start without syncing
-./scripts/dev-mode/quickstart-dev.sh
+./scripts/dev-mode/start-build-native.sh
 
 # Sync with upstream (merge)
-./scripts/dev-mode/quickstart-dev.sh -U
+./scripts/dev-mode/start-build-native.sh -U
 
 # Rebase onto upstream
-./scripts/dev-mode/quickstart-dev.sh -R
+./scripts/dev-mode/start-build-native.sh -R
 
 # Skip sync entirely
-./scripts/dev-mode/quickstart-dev.sh -S
+./scripts/dev-mode/start-build-native.sh -S
 
 # With custom workspace
-./scripts/dev-mode/quickstart-dev.sh -U /path/to/workspace
+./scripts/dev-mode/start-build-native.sh -U /path/to/workspace
 ```
 
 **Changes from original:**
@@ -137,7 +137,7 @@ git add .
 git commit -m "Add feature X"
 
 # Test changes
-./scripts/dev-mode/quickstart-dev.sh
+./scripts/dev-mode/start-build-native.sh
 
 # Push to your fork
 git push origin dev
@@ -166,7 +166,7 @@ git push --force-with-lease origin dev
 
 ```bash
 # Run OpenCode with latest upstream changes
-./scripts/dev-mode/quickstart-dev.sh -U
+./scripts/dev-mode/start-build-native.sh -U
 ```
 
 ## Architecture
@@ -228,12 +228,12 @@ git merge --abort  # or git rebase --abort
 ```bash
 # Make scripts executable
 chmod +x scripts/git-*.sh
-chmod +x scripts/dev-mode/quickstart-dev.sh
+chmod +x scripts/dev-mode/start-build-native.sh
 ```
 
 ## Comparison: Old vs New
 
-### Old Approach (quickstart-dev.sh)
+### Old Approach (start-build-native.sh)
 ```bash
 # Used git submodule update --remote --merge
 # Limited error handling

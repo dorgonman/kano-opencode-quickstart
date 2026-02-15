@@ -76,8 +76,8 @@ scripts/
 
 The following scripts have been automatically updated to use new paths:
 
-✅ `quickstart.sh` - Updated to reference `scripts/user-mode/` and `scripts/deps/`  
-✅ `scripts/dev-mode/quickstart-dev.sh` - Updated to reference `scripts/git/`  
+✅ `start-native.sh` - Updated to reference `scripts/user-mode/` and `scripts/deps/`  
+✅ `scripts/dev-mode/start-build-native.sh` - Updated to reference `scripts/git/`  
 ✅ `scripts/user-mode/*.sh` - Already using relative paths (no changes needed)
 
 ## How to Update Your Scripts
@@ -130,8 +130,8 @@ scripts/update-opencode.sh → scripts/utils/update-opencode.sh
 
 ```bash
 # These still work from repo root
-./quickstart.sh
-./scripts/dev-mode/quickstart-dev.sh
+./start-native.sh
+./scripts/dev-mode/start-build-native.sh
 ```
 
 ### New Commands (Organized by Category)

@@ -4,7 +4,7 @@
 
 ### Created Files
 
-**scripts/dev-mode/quickstart-dev.sh**
+**scripts/dev-mode/start-build-native.sh**
 - Full-featured developer mode script
 - Supports `-U/--update` for upstream sync
 - Supports `-S/--skip-sync` to skip submodule operations
@@ -38,19 +38,19 @@
 
 ```bash
 # Start with default settings
-./scripts/dev-mode/quickstart-dev.sh
+./scripts/dev-mode/start-build-native.sh
 
 # Update submodules before starting
-./scripts/dev-mode/quickstart-dev.sh -U
+./scripts/dev-mode/start-build-native.sh -U
 
 # Skip submodule sync
-./scripts/dev-mode/quickstart-dev.sh -S
+./scripts/dev-mode/start-build-native.sh -S
 
 # Specify workspace path
-./scripts/dev-mode/quickstart-dev.sh /path/to/workspace
+./scripts/dev-mode/start-build-native.sh /path/to/workspace
 
 # Show help
-./scripts/dev-mode/quickstart-dev.sh -h
+./scripts/dev-mode/start-build-native.sh -h
 ```
 
 ✅ Task KO-TSK-0003 completed successfully!

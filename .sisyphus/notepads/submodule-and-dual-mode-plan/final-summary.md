@@ -28,7 +28,7 @@
 - ✅ Verified with `git submodule status`
 
 **Task 2 (KO-TSK-0003): Developer Mode**
-- ✅ Created `scripts/dev-mode/quickstart-dev.sh`
+- ✅ Created `scripts/dev-mode/start-build-native.sh`
 - ✅ Implemented `-U/--update` option
 - ✅ Implemented `-S/--skip-sync` option
 - ✅ Implemented `-h/--help` option
@@ -36,7 +36,7 @@
 - ✅ Runs OpenCode from source using bun
 
 **Task 3 (KO-TSK-0004): User Mode**
-- ✅ Existing `quickstart.sh` continues to work
+- ✅ Existing `start-native.sh` continues to work
 - ✅ Uses system-installed `opencode` CLI
 - ✅ No changes needed (already correct)
 
@@ -48,7 +48,7 @@
 - ✅ Included all command examples
 
 **Task 5 (KO-TSK-0006): Submodule Sync Logic**
-- ✅ Implemented in `quickstart-dev.sh`
+- ✅ Implemented in `start-build-native.sh`
 - ✅ Update with `--remote --merge`
 - ✅ Error handling for conflicts
 - ✅ Skip option working
@@ -64,8 +64,8 @@
 ### Verification Checklist
 
 - [x] Git submodules正确配置
-- [x] User mode (quickstart.sh) 正常工作
-- [x] Developer mode (quickstart-dev.sh) 正常工作
+- [x] User mode (start-native.sh) 正常工作
+- [x] Developer mode (start-build-native.sh) 正常工作
 - [x] `-U` 选项可以更新submodules
 - [x] `-S` 选项可以跳过submodule同步
 - [x] `-h` 选项显示帮助信息
@@ -75,7 +75,7 @@
 ### Files Created/Modified
 
 **Created:**
-- `scripts/dev-mode/quickstart-dev.sh` - Developer mode launcher
+- `scripts/dev-mode/start-build-native.sh` - Developer mode launcher
 - `.sisyphus/notepads/submodule-and-dual-mode-plan/` - Progress notes
 
 **Modified:**
@@ -91,8 +91,8 @@
 ### Next Steps
 
 The implementation is complete. Users can now:
-1. Use User Mode with `./quickstart.sh` (default, uses installed CLI)
-2. Use Developer Mode with `./scripts/dev-mode/quickstart-dev.sh` (runs from source)
+1. Use User Mode with `./start-native.sh` (default, uses installed CLI)
+2. Use Developer Mode with `./scripts/dev-mode/start-build-native.sh` (runs from source)
 3. Update submodules with `-U` flag
 4. Skip submodule sync with `-S` flag
 5. Reference git-master-skill for submodule operations in other projects

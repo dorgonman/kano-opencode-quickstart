@@ -4,7 +4,7 @@ Standalone, copy-pasteable OpenCode server launcher + quickstart scripts.
 
 ## What’s inside
 
-- `quickstart.sh`: auto-picks tailnet vs local.
+- `start-native.sh`: auto-picks tailnet vs local.
 - `scripts/opencode-server.sh`: start/stop OpenCode, optional Tailscale Serve exposure.
 - `scripts/`: convenience wrappers (local, tailnet, basic-auth) + port utilities.
 - `scripts/windows/`: Windows helpers (PowerShell + CMD), including a Tailscale Serve Windows Service wrapper.
@@ -25,7 +25,7 @@ For general users who want to use the official OpenCode release.
 
 **Quick start:**
 ```bash
-./quickstart.sh
+./start-native.sh
 ```
 
 ### Developer Mode
@@ -43,16 +43,16 @@ For contributors who want to run OpenCode from source code.
 git submodule update --init --recursive
 
 # Run from source
-./scripts/dev-mode/quickstart-dev.sh
+./scripts/dev-mode/start-build-native.sh
 
 # Update submodules and run
-./scripts/dev-mode/quickstart-dev.sh -U
+./scripts/dev-mode/start-build-native.sh -U
 
 # Skip submodule sync
-./scripts/dev-mode/quickstart-dev.sh -S
+./scripts/dev-mode/start-build-native.sh -S
 
 # Show help
-./scripts/dev-mode/quickstart-dev.sh -h
+./scripts/dev-mode/start-build-native.sh -h
 ```
 
 **Developer Mode Options:**
@@ -149,7 +149,7 @@ Runs tailnet mode if `tailscale` exists, otherwise runs local-only.
 **First-time setup**: The script automatically detects if dependencies are not installed and runs `opencode-deps-install.sh` for you.
 
 ```bash
-./quickstart.sh
+./start-native.sh
 ```
 
 **Subsequent runs**: Dependencies are already installed, server starts immediately. To update dependencies, run:
@@ -186,7 +186,7 @@ export OPENCODE_SERVER_PASSWORD='change-me'
 > - The service defaults should be `Port=5096` and `TsHttpsPort=9443`, but some installs still end up using `4096/8443`.
 > - Root cause is still under investigation; treat service mode as experimental.
 >
-> Recommendation: use `./quickstart.sh` (interactive) for now.
+> Recommendation: use `./start-native.sh` (interactive) for now.
 Defaults: `Port=5096`, `TsHttpsPort=9443` (override with `-Port` / `-TsHttpsPort`).\nNote: When installed via `nssm`, the service is configured with `AppKillProcessTree=1` so stopping the service also stops the `opencode` child process (no lingering background server).
 
 From an elevated PowerShell:
@@ -214,15 +214,15 @@ If Tailscale Serve looks stuck:
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts\windows\tailnet-service.ps1 -Action diagnose
 ```\n## Use this repo in another repo
 
-- Copy `quickstart.sh` and `scripts/` into the target repo root.
+- Copy `start-native.sh` and `scripts/` into the target repo root.
 - Also copy `.opencode/` if you want repo-local logs/pids.
 
 ## “Say this to your agent”
 
-- Say this to your agent: “Install `kano-opencode-quickstart` into my repo at `<path>`; I want `./quickstart.sh` at repo root and the `scripts/` folder.”
-- The agent will do: copy `quickstart.sh` + `scripts/`, and ensure `\.opencode/logs/` + `\.opencode/run/` + `\.opencode/node_modules/` are gitignored.
-- Expected output: `<path>/quickstart.sh` and `<path>/scripts/opencode-server.sh` (plus updated `<path>/.gitignore`).
-- Note: On first run, `quickstart.sh` automatically installs dependencies via `opencode-deps-install.sh`.
+- Say this to your agent: “Install `kano-opencode-quickstart` into my repo at `<path>`; I want `./start-native.sh` at repo root and the `scripts/` folder.”
+- The agent will do: copy `start-native.sh` + `scripts/`, and ensure `\.opencode/logs/` + `\.opencode/run/` + `\.opencode/node_modules/` are gitignored.
+- Expected output: `<path>/start-native.sh` and `<path>/scripts/user-mode/opencode-server.sh` (plus updated `<path>/.gitignore`).
+- Note: On first run, `start-native.sh` automatically installs dependencies via `opencode-deps-install.sh`.
 
 - Say this to your agent: “On Windows, set up the tailnet service for port 4096 and show me how to check logs.”
 - The agent will do: run `powershell -NoProfile -ExecutionPolicy Bypass -File scripts\\windows\\tailnet-service.ps1 -Action bootstrap` and verify `tailscale serve status`.

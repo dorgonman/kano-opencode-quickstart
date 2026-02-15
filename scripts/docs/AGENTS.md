@@ -9,7 +9,7 @@ Shell-based OpenCode server launcher with Tailscale support. Bash + PowerShell s
 ## STRUCTURE
 ```
 kano-opencode-quickstart/
-├── quickstart.sh              # Entry: auto-detects tailnet vs local
+├── start-native.sh            # Entry: auto-detects tailnet vs local
 ├── scripts/                   # Organized by functionality
 │   ├── git/                   # Git workflow scripts (submodule management)
 │   │   ├── setup-upstream.sh  # Configure upstream remotes
@@ -29,7 +29,7 @@ kano-opencode-quickstart/
 │   │   ├── kill-port.sh       # Free occupied ports
 │   │   └── update-opencode.sh # Update OpenCode
 │   ├── dev-mode/              # Development mode (run from source)
-│   │   └── quickstart-dev.sh  # Run OpenCode from source
+│   │   └── start-build-native.sh  # Run OpenCode from source
 │   ├── windows/               # Windows-specific (service + PowerShell utils)
 │   │   └── tailnet-service.ps1 # Windows service management
 │   └── docs/                  # Documentation files
@@ -44,12 +44,12 @@ kano-opencode-quickstart/
 
 | Task | Location | Notes |
 |------|----------|-------|
-| Start server (auto) | `quickstart.sh` | Tailscale if available, else localhost |
+| Start server (auto) | `start-native.sh` | Tailscale if available, else localhost |
 | Start server (manual) | `scripts/user-mode/start-*.sh` | Local/tailnet/auth modes |
 | Core server logic | `scripts/user-mode/opencode-server.sh` | 465 lines, handles all modes + Tailscale Serve |
 | Git workflows | `scripts/git/*.sh` | Submodule sync/rebase with upstream |
 | Setup dependencies | `scripts/deps/prerequisite.{sh,ps1}` | First-run: install .opencode/node_modules |
-| Development mode | `scripts/dev-mode/quickstart-dev.sh` | Run OpenCode from source |
+| Development mode | `scripts/dev-mode/start-build-native.sh` | Run OpenCode from source |
 | Port conflicts (Unix) | `scripts/utils/kill-port.sh` | Unix port cleanup |
 | Port conflicts (Windows) | `scripts/windows/kill-port.ps1` | PowerShell port cleanup |
 | Windows service | `scripts/windows/tailnet-service.ps1` | NSSM/sc.exe wrapper (experimental) |
@@ -110,7 +110,7 @@ kano-opencode-quickstart/
 ./scripts/deps/prerequisite.sh install
 
 # Auto mode (recommended)
-./quickstart.sh
+./start-native.sh
 
 # Local only (no auth, localhost:4096)
 ./scripts/user-mode/start-local.sh
@@ -136,8 +136,8 @@ export OPENCODE_SERVER_PASSWORD='change-me'
 ./scripts/git/rebase-submodules.sh   # Rebase onto upstream
 
 # Development mode (run from source)
-./scripts/dev-mode/quickstart-dev.sh -U  # Sync and run
-./scripts/dev-mode/quickstart-dev.sh -R  # Rebase and run
+./scripts/dev-mode/start-build-native.sh -U  # Sync and run
+./scripts/dev-mode/start-build-native.sh -R  # Rebase and run
 ```
 
 **Windows PowerShell:**

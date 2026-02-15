@@ -1,5 +1,41 @@
 #!/usr/bin/env bash
 
+
+ensure_bun_in_path() {
+  # 1. Check if bun is already in PATH
+  if command -v bun >/dev/null 2>&1; then
+    return 0
+  fi
+
+  # 2. Check candidate directories
+  local candidates=()
+  [[ -n "${HOME:-}" ]] && candidates+=("${HOME}/.bun/bin")
+  [[ -n "${USERPROFILE:-}" ]] && candidates+=("${USERPROFILE}/.bun/bin")
+  
+  # Windows-specific: try to handle backslashes if standard paths fail
+  if [[ "${OS:-}" == "Windows_NT" ]]; then
+      if command -v cygpath >/dev/null 2>&1 && [[ -n "${USERPROFILE:-}" ]]; then
+          local win_bun_path
+          win_bun_path="$(cygpath -u "${USERPROFILE}")/.bun/bin"
+          candidates+=("$win_bun_path")
+      fi
+  fi
+
+  for dir in "${candidates[@]}"; do
+    if [[ -d "$dir" ]]; then
+      if [[ -f "$dir/bun" ]] || [[ -f "$dir/bun.exe" ]]; then
+        export PATH="$dir:$PATH"
+        return 0
+      fi
+    fi
+  done
+  
+  return 1
+}
+
+# Try to find bun in default locations
+ensure_bun_in_path || true
+
 log_info() {
   if declare -F gith_log >/dev/null 2>&1; then
     gith_log "INFO" "$1"
