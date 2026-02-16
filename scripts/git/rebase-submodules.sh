@@ -22,12 +22,29 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
 REPO_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd -P)"
 
 # Source git-helpers.sh from kano-git-master-skill
-GIT_HELPERS="${REPO_ROOT}/skills/kano-git-master-skill/scripts/lib/git-helpers.sh"
-if [[ ! -f "$GIT_HELPERS" ]]; then
-  echo "ERROR: git-helpers.sh not found at: $GIT_HELPERS" >&2
+# Try multiple locations: skill submodule, commit-tools lib, local skill
+GIT_HELPERS=""
+for candidate in \
+  "${REPO_ROOT}/skills/kano-git-master-skill/scripts/lib/git-helpers.sh" \
+  "${REPO_ROOT}/skills/kano-git-master-skill/scripts/commit-tools/lib/git-helpers.sh" \
+  "${REPO_ROOT}/skills/kano/kano-git-master-skill/scripts/lib/git-helpers.sh" \
+  "${REPO_ROOT}/skills/kano/kano-git-master-skill/scripts/commit-tools/lib/git-helpers.sh"; do
+  if [[ -f "$candidate" ]]; then
+    GIT_HELPERS="$candidate"
+    break
+  fi
+done
+
+if [[ -z "$GIT_HELPERS" ]]; then
+  echo "ERROR: git-helpers.sh not found" >&2
   echo "       Please ensure kano-git-master-skill submodule is initialized" >&2
+  echo "       Expected locations:" >&2
+  echo "         - ${REPO_ROOT}/skills/kano-git-master-skill/scripts/lib/git-helpers.sh" >&2
+  echo "         - ${REPO_ROOT}/skills/kano/kano-git-master-skill/scripts/lib/git-helpers.sh" >&2
   exit 1
 fi
+
+source "$GIT_HELPERS"
 
 source "$GIT_HELPERS"
 
@@ -81,24 +98,24 @@ gith_log "INFO" "========================================="
 rebase_submodule() {
   local submodule_path="$1"
   local submodule_name="$(basename "$submodule_path")"
-  
+
   gith_log "INFO" ""
   gith_log "INFO" "Processing: $submodule_name"
   gith_log "INFO" "-----------------------------------------"
-  
+
   # Check if submodule exists
   if [[ ! -d "$submodule_path" ]]; then
     gith_error "Submodule not found: $submodule_path"
     gith_error "Run: git submodule update --init --recursive"
     return 1
   fi
-  
+
   # Check if it's a git repo
   if ! gith_is_git_repo "$submodule_path"; then
     gith_error "Not a git repository: $submodule_path"
     return 1
   fi
-  
+
   # Check for remote
   if ! gith_has_remote "$REMOTE" "$submodule_path"; then
     gith_error "Remote '$REMOTE' not found in $submodule_name"
@@ -106,24 +123,24 @@ rebase_submodule() {
     (cd "$submodule_path" && git remote -v)
     return 1
   fi
-  
+
   # Fetch from remote
   gith_log "INFO" "Fetching from $REMOTE..."
   if ! gith_fetch_remote "$REMOTE" "$submodule_path"; then
     gith_error "Failed to fetch from $REMOTE"
     return 1
   fi
-  
+
   # Get current branch
   local current_branch
   current_branch="$(gith_get_current_branch "$submodule_path")"
-  
+
   if [[ -z "$current_branch" ]]; then
     gith_error "Submodule is in detached HEAD state"
     gith_error "Please checkout a branch first"
     return 1
   fi
-  
+
   # Determine target branch
   local target_branch="$BRANCH"
   if [[ -z "$target_branch" ]]; then
@@ -140,22 +157,22 @@ rebase_submodule() {
       fi
     fi
   fi
-  
+
   # Verify target branch exists on remote
   if ! gith_branch_exists_on_remote "$REMOTE" "$target_branch" "$submodule_path"; then
     gith_error "Branch '$target_branch' does not exist on $REMOTE"
     return 1
   fi
-  
+
   gith_log "INFO" "Rebasing $current_branch onto $REMOTE/$target_branch"
-  
+
   # Stash local changes if any
   local stash_ref=""
   if gith_has_changes "$submodule_path"; then
     gith_log "INFO" "Stashing local changes..."
     stash_ref="$(gith_stash_create "$submodule_path" "git-rebase-submodules auto-stash")"
   fi
-  
+
   # Rebase
   if [[ $DRY_RUN -eq 1 ]]; then
     gith_log "INFO" "[DRY-RUN] Would run: git rebase $REMOTE/$target_branch"
@@ -169,17 +186,17 @@ rebase_submodule() {
       gith_error "  git rebase --continue"
       gith_error "  # Or abort:"
       gith_error "  git rebase --abort"
-      
+
       # Try to restore stash
       if [[ -n "$stash_ref" ]]; then
         gith_log "INFO" "Restoring stashed changes..."
         gith_stash_pop "$submodule_path" "$stash_ref" || true
       fi
-      
+
       return 1
     fi
   fi
-  
+
   # Restore stash if created
   if [[ -n "$stash_ref" ]]; then
     gith_log "INFO" "Restoring stashed changes..."
@@ -189,7 +206,7 @@ rebase_submodule() {
       return 1
     fi
   fi
-  
+
   gith_log "INFO" "✓ $submodule_name rebased successfully"
   return 0
 }

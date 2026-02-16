@@ -13,10 +13,25 @@ fi
 source "$SHARED_LIB"
 
 # Source git-helpers.sh from kano-git-master-skill
-GIT_HELPERS="${REPO_ROOT}/skills/kano-git-master-skill/scripts/lib/git-helpers.sh"
-if [[ ! -f "$GIT_HELPERS" ]]; then
-  echo "ERROR: git-helpers.sh not found at: $GIT_HELPERS" >&2
+# Try multiple locations: skill submodule, commit-tools lib, local skill
+GIT_HELPERS=""
+for candidate in \
+  "${REPO_ROOT}/skills/kano-git-master-skill/scripts/lib/git-helpers.sh" \
+  "${REPO_ROOT}/skills/kano-git-master-skill/scripts/commit-tools/lib/git-helpers.sh" \
+  "${REPO_ROOT}/skills/kano/kano-git-master-skill/scripts/lib/git-helpers.sh" \
+  "${REPO_ROOT}/skills/kano/kano-git-master-skill/scripts/commit-tools/lib/git-helpers.sh"; do
+  if [[ -f "$candidate" ]]; then
+    GIT_HELPERS="$candidate"
+    break
+  fi
+done
+
+if [[ -z "$GIT_HELPERS" ]]; then
+  echo "ERROR: git-helpers.sh not found" >&2
   echo "       Please ensure kano-git-master-skill submodule is initialized" >&2
+  echo "       Expected locations:" >&2
+  echo "         - ${REPO_ROOT}/skills/kano-git-master-skill/scripts/lib/git-helpers.sh" >&2
+  echo "         - ${REPO_ROOT}/skills/kano/kano-git-master-skill/scripts/lib/git-helpers.sh" >&2
   exit 1
 fi
 
@@ -142,9 +157,9 @@ gith_log "INFO" "========================================="
 if [[ "$SKIP_SYNC" == "false" ]]; then
   # Ensure submodules are initialized
   gith_log "INFO" "Ensuring submodules are initialized..."
-  
+
   cd "${REPO_ROOT}"
-  
+
   if [[ ! -d "src/opencode/.git" ]] || [[ ! -d "src/oh-my-opencode/.git" ]]; then
     gith_log "INFO" "Initializing submodules..."
     git submodule update --init --recursive src/opencode src/oh-my-opencode || {
@@ -153,7 +168,7 @@ if [[ "$SKIP_SYNC" == "false" ]]; then
     }
     gith_log "INFO" "✓ Submodules initialized"
   fi
-  
+
   # Setup upstream remotes if not already configured
   if ! gith_has_remote "upstream" "src/opencode" || ! gith_has_remote "upstream" "src/oh-my-opencode"; then
     gith_log "INFO" "Setting up upstream remotes..."
@@ -162,7 +177,7 @@ if [[ "$SKIP_SYNC" == "false" ]]; then
       exit 1
     }
   fi
-  
+
   # Update or rebase submodules
   if [[ "$UPDATE_SUBMODULES" == "true" ]]; then
     gith_log "INFO" "Syncing submodules with upstream (merge)..."
@@ -240,7 +255,7 @@ fi
 
 # --- Install & build dependencies ---
 
-if [[ ! -d "${OPENCODE_SRC}/node_modules" ]]; then
+if [[ ! -d "${OPENCODE_SRC}/node_modules" ]] || [[ ! -d "${OPENCODE_SRC}/node_modules/drizzle-orm" ]]; then
   gith_log "INFO" "Installing OpenCode dependencies..."
   (cd "${OPENCODE_SRC}" && "${BUN_CMD}" install) || {
     gith_error "Failed to install OpenCode dependencies"

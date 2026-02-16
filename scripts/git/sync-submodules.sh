@@ -21,10 +21,25 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
 REPO_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd -P)"
 
 # 2. Source git-helpers.sh from kano-git-master-skill
-GIT_HELPERS="${REPO_ROOT}/skills/kano-git-master-skill/scripts/lib/git-helpers.sh"
-if [[ ! -f "$GIT_HELPERS" ]]; then
-  echo "ERROR: git-helpers.sh not found at: $GIT_HELPERS" >&2
+# Try multiple locations: skill submodule, commit-tools lib, local skill
+GIT_HELPERS=""
+for candidate in \
+  "${REPO_ROOT}/skills/kano-git-master-skill/scripts/lib/git-helpers.sh" \
+  "${REPO_ROOT}/skills/kano-git-master-skill/scripts/commit-tools/lib/git-helpers.sh" \
+  "${REPO_ROOT}/skills/kano/kano-git-master-skill/scripts/lib/git-helpers.sh" \
+  "${REPO_ROOT}/skills/kano/kano-git-master-skill/scripts/commit-tools/lib/git-helpers.sh"; do
+  if [[ -f "$candidate" ]]; then
+    GIT_HELPERS="$candidate"
+    break
+  fi
+done
+
+if [[ -z "$GIT_HELPERS" ]]; then
+  echo "ERROR: git-helpers.sh not found" >&2
   echo "       Please ensure kano-git-master-skill submodule is initialized" >&2
+  echo "       Expected locations:" >&2
+  echo "         - ${REPO_ROOT}/skills/kano-git-master-skill/scripts/lib/git-helpers.sh" >&2
+  echo "         - ${REPO_ROOT}/skills/kano/kano-git-master-skill/scripts/lib/git-helpers.sh" >&2
   exit 1
 fi
 source "$GIT_HELPERS"
@@ -82,18 +97,18 @@ sync_submodule() {
   local submodule_path="$1"
   local abs_path="${REPO_ROOT}/${submodule_path}"
   local submodule_name="$(basename "$submodule_path")"
-  
+
   gith_log "INFO" ""
   gith_log "INFO" "Syncing: $submodule_name ($submodule_path)"
   gith_log "INFO" "-----------------------------------------"
-  
+
   # Check if submodule exists and is initialized
   if [[ ! -d "$abs_path/.git" && ! -f "$abs_path/.git" ]]; then
     gith_log "WARN" "Submodule not initialized or folder missing: $submodule_path"
     gith_log "WARN" "Run: git submodule update --init --recursive"
     return 1
   fi
-  
+
   # Get configured remotes for this submodule (from .gitmodules)
   local remotes=()
   while IFS= read -r rname; do
@@ -107,24 +122,24 @@ sync_submodule() {
       gith_fetch_remote "$remote" "$abs_path" || gith_log "WARN" "Failed to fetch from $remote"
     fi
   done
-  
+
   if [[ $FETCH_ONLY -eq 1 ]]; then
     return 0
   fi
-  
+
   # Get target branch from .gitmodules
   local target_branch
   target_branch=$(git config -f "${REPO_ROOT}/.gitmodules" --get "submodule.$submodule_path.branch" || echo "dev")
-  
+
   # Update working tree
   local current_branch
   current_branch="$(gith_get_current_branch "$abs_path")"
-  
+
   if [[ -z "$current_branch" ]]; then
     gith_log "WARN" "Failed to determine or switch to a branch in $submodule_name, skipping merge"
     return 0
   fi
-  
+
   # Determine which remote to merge from (prefer upstream if it exists and has the branch)
   local tracking_remote="origin"
   if gith_has_remote "upstream" "$abs_path" && gith_branch_exists_on_remote "upstream" "$target_branch" "$abs_path"; then
@@ -135,18 +150,18 @@ sync_submodule() {
   if gith_has_remote "upstream" "$abs_path" && gith_branch_exists_on_remote "upstream" "$current_branch" "$abs_path"; then
     merge_remote="upstream"
   fi
-  
+
   if ! gith_branch_exists_on_remote "$merge_remote" "$current_branch" "$abs_path"; then
     gith_log "WARN" "Branch '$current_branch' not found on $merge_remote, skipping merge"
     return 0
   fi
-  
+
   # Stash local changes
   local stash_ref=""
   if gith_has_changes "$abs_path"; then
     stash_ref="$(gith_stash_create "$abs_path" "git-sync-submodules auto-stash")"
   fi
-  
+
   # Merge
   gith_log "INFO" "Merging $merge_remote/$current_branch into local $current_branch..."
   if [[ $DRY_RUN -eq 1 ]]; then
@@ -158,12 +173,12 @@ sync_submodule() {
       return 1
     fi
   fi
-  
+
   # Restore stash
   if [[ -n "$stash_ref" ]]; then
     gith_stash_pop "$abs_path" "$stash_ref" || true
   fi
-  
+
   gith_log "INFO" "✓ $submodule_name sync complete"
   return 0
 }

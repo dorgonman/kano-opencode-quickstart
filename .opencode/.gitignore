@@ -1,0 +1,10 @@
+# Runtime directories - all content ignored
+dev/
+run/
+logs/
+
+# Dependencies
+node_modules
+package.json
+bun.lock
+

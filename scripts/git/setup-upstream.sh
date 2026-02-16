@@ -20,10 +20,25 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
 REPO_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd -P)"
 
 # Source git-helpers.sh from kano-git-master-skill
-GIT_HELPERS="${REPO_ROOT}/skills/kano-git-master-skill/scripts/lib/git-helpers.sh"
-if [[ ! -f "$GIT_HELPERS" ]]; then
-  echo "ERROR: git-helpers.sh not found at: $GIT_HELPERS" >&2
+# Try multiple locations: skill submodule, commit-tools lib, local skill
+GIT_HELPERS=""
+for candidate in \
+  "${REPO_ROOT}/skills/kano-git-master-skill/scripts/lib/git-helpers.sh" \
+  "${REPO_ROOT}/skills/kano-git-master-skill/scripts/commit-tools/lib/git-helpers.sh" \
+  "${REPO_ROOT}/skills/kano/kano-git-master-skill/scripts/lib/git-helpers.sh" \
+  "${REPO_ROOT}/skills/kano/kano-git-master-skill/scripts/commit-tools/lib/git-helpers.sh"; do
+  if [[ -f "$candidate" ]]; then
+    GIT_HELPERS="$candidate"
+    break
+  fi
+done
+
+if [[ -z "$GIT_HELPERS" ]]; then
+  echo "ERROR: git-helpers.sh not found" >&2
   echo "       Please ensure kano-git-master-skill submodule is initialized" >&2
+  echo "       Expected locations:" >&2
+  echo "         - ${REPO_ROOT}/skills/kano-git-master-skill/scripts/lib/git-helpers.sh" >&2
+  echo "         - ${REPO_ROOT}/skills/kano/kano-git-master-skill/scripts/lib/git-helpers.sh" >&2
   exit 1
 fi
 
@@ -73,29 +88,29 @@ setup_upstream() {
   local submodule_path="$1"
   local upstream_url="$2"
   local submodule_name="$(basename "$submodule_path")"
-  
+
   gith_log "INFO" ""
   gith_log "INFO" "Processing: $submodule_name"
   gith_log "INFO" "-----------------------------------------"
-  
+
   # Check if submodule exists
   if [[ ! -d "$submodule_path" ]]; then
     gith_error "Submodule not found: $submodule_path"
     gith_error "Run: git submodule update --init --recursive"
     return 1
   fi
-  
+
   # Check if it's a git repo
   if ! gith_is_git_repo "$submodule_path"; then
     gith_error "Not a git repository: $submodule_path"
     return 1
   fi
-  
+
   # Check if upstream already exists
   if gith_has_remote "upstream" "$submodule_path"; then
     local current_upstream
     current_upstream="$(cd "$submodule_path" && git remote get-url upstream 2>/dev/null)"
-    
+
     if [[ "$current_upstream" == "$upstream_url" ]]; then
       gith_log "INFO" "✓ Upstream already configured correctly: $upstream_url"
       return 0
@@ -103,7 +118,7 @@ setup_upstream() {
       gith_log "WARN" "Upstream exists but with different URL:"
       gith_log "WARN" "  Current:  $current_upstream"
       gith_log "WARN" "  Expected: $upstream_url"
-      
+
       if [[ $DRY_RUN -eq 1 ]]; then
         gith_log "INFO" "[DRY-RUN] Would update upstream URL"
       else
@@ -114,14 +129,14 @@ setup_upstream() {
         fi
         gith_log "INFO" "✓ Upstream URL updated"
       fi
-      
+
       return 0
     fi
   fi
-  
+
   # Add upstream remote
   gith_log "INFO" "Adding upstream remote: $upstream_url"
-  
+
   if [[ $DRY_RUN -eq 1 ]]; then
     gith_log "INFO" "[DRY-RUN] Would run: git remote add upstream $upstream_url"
   else
@@ -131,7 +146,7 @@ setup_upstream() {
     fi
     gith_log "INFO" "✓ Upstream remote added"
   fi
-  
+
   # Fetch from upstream
   if [[ $DRY_RUN -eq 0 ]]; then
     gith_log "INFO" "Fetching from upstream..."
@@ -141,7 +156,7 @@ setup_upstream() {
     fi
     gith_log "INFO" "✓ Fetched from upstream"
   fi
-  
+
   gith_log "INFO" "✓ $submodule_name upstream configured successfully"
   return 0
 }
