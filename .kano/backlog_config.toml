@@ -1,9 +1,9 @@
 #
-# Project-Level Backlog Configuration for kano-opencode-quickstart
+# Project-Level Backlog Configuration for kano-opencode
 #
-# This repo is configured to point at an external backlog storage location
-# (currently under kano-agent-backlog-skill-demo). Keep product ownership here
-# (this file) even if the canonical backlog data lives elsewhere.
+# This repo stores backlog data under the `_kano/backlog` git submodule.
+# Keep product ownership here (this file) and point each product to its
+# canonical location inside that submodule.
 #
 
 # Global defaults applied to this project (and all products defined here)
@@ -28,10 +28,10 @@ path = ".kano/cache/backlog/vector"
 collection = "backlog"
 metric = "cosine"
 
-[products.kano-opencode-quickstart]
-name = "kano-opencode-quickstart"
+[products.kano-opencode]
+name = "kano-opencode"
 prefix = "KO"
-backlog_root = "_kano/backlog/products/kano-opencode-quickstart"
+backlog_root = "_kano/backlog/products/kano-opencode"
 # Added by kano-backlog admin init (2026-02-02 16:36:21Z, agent=codex)
 [products.admin-init-smoke2]
 name = "admin-init-smoke2"

@@ -20,3 +20,7 @@
 [submodule "skills/kano"]
 	path = skills/kano
 	url = https://github.com/kano-ai-org/kano-agent-skill.git
+[submodule "_kano/backlog"]
+	path = _kano/backlog
+	url = https://github.com/kano-ai-org/kano-skill-dev-backlog.git
+	branch = main
