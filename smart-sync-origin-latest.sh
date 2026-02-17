@@ -19,4 +19,3 @@ fi
 
 export KANO_GIT_MASTER_ROOT="$ROOT"
 exec bash "$SKILL_SCRIPT" "$@"
-
