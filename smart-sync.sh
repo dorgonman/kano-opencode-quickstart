@@ -1,25 +1,54 @@
 #!/usr/bin/env bash
 #
-# smart-sync.sh - Project-level wrapper for AI-powered intelligent sync
+# smart-sync.sh - Project-level entry point for sync workflows
 #
-# This script points to the kano-git-master-skill smart-sync tool.
-# It automatically handles provider selection and falls back to standard
-# git rebase if AI providers are unavailable.
+# This script was split into two explicit workflows:
+#   1) smart-sync-upstream-force-push.sh  - sync with upstream then force-push to origin
+#   2) smart-sync-origin-latest.sh        - sync local default branch to origin (no push)
 #
-# It can be run from any directory within the project.
+# (Legacy) The old AI-powered sync wrapper is kept as smart-sync-ai.sh.
 
-# Find project root (location of this script)
+set -euo pipefail
+
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-# Use the auto-fallback version as the primary entry point
-SKILL_SCRIPT="$ROOT/skills/kano/kano-git-master-skill/scripts/commit-tools/sync/smart-sync-copilot.sh"
+usage() {
+  cat <<'EOF'
+Usage: ./smart-sync.sh <mode> [args...]
 
-if [[ ! -f "$SKILL_SCRIPT" ]]; then
-  echo "ERROR: Smart Sync script not found at:"
-  echo "  $SKILL_SCRIPT"
-  echo "Ensure the kano-git-master-skill submodule is initialized."
-  exit 1
+Modes:
+  upstream-force-push   Sync with upstream, then push --force-with-lease to origin
+  origin-latest         Checkout origin default branch and pull --rebase (no push)
+  ai                    Legacy AI-powered sync (no push)
+
+Examples:
+  ./smart-sync.sh origin-latest
+  ./smart-sync.sh upstream-force-push --verbose
+  ./smart-sync.sh ai --onto upstream/main
+EOF
+}
+
+mode="${1:-}"
+if [[ -z "$mode" || "$mode" == "-h" || "$mode" == "--help" ]]; then
+  usage
+  exit 0
 fi
+shift || true
 
-# Run the actual script
-exec bash "$SKILL_SCRIPT" "$@"
+case "$mode" in
+  upstream-force-push)
+    exec bash "$ROOT/smart-sync-upstream-force-push.sh" "$@"
+    ;;
+  origin-latest)
+    exec bash "$ROOT/smart-sync-origin-latest.sh" "$@"
+    ;;
+  ai)
+    exec bash "$ROOT/smart-sync-ai.sh" "$@"
+    ;;
+  *)
+    echo "ERROR: Unknown mode: $mode" >&2
+    usage >&2
+    exit 1
+    ;;
+esac
+

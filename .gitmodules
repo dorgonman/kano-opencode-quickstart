@@ -1,19 +1,19 @@
 
 [submodule "src/oh-my-opencode"]
 	path = src/oh-my-opencode
-	url = https://github.com/dorgonman/oh-my-opencode.git
+	url = https://github.com/kano-ai-org/oh-my-opencode.git
 	branch = dev
-	kog-remote-origin-ssh = git@github.com:dorgonman/oh-my-opencode.git
-	kog-remote-origin-https = https://github.com/dorgonman/oh-my-opencode.git
+	kog-remote-origin-ssh = git@github.com:kano-ai-org/oh-my-opencode.git
+	kog-remote-origin-https = https://github.com/kano-ai-org/oh-my-opencode.git
 	kog-remote-upstream = https://github.com/code-yeongyu/oh-my-opencode.git
 	kog-push-remote = origin
 	kog-protocol-priority = auto
 [submodule "src/opencode"]
 	path = src/opencode
-	url = https://github.com/dorgonman/opencode.git
+	url = https://github.com/kano-ai-org/opencode.git
 	branch = dev
-	kog-remote-origin-ssh = git@github.com:dorgonman/opencode.git
-	kog-remote-origin-https = https://github.com/dorgonman/opencode.git
+	kog-remote-origin-ssh = git@github.com:kano-ai-org/opencode.git
+	kog-remote-origin-https = https://github.com/kano-ai-org/opencode.git
 	kog-remote-upstream = https://github.com/anomalyco/opencode.git
 	kog-push-remote = origin
 	kog-protocol-priority = auto
