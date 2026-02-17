@@ -2,7 +2,7 @@
 [submodule "src/oh-my-opencode"]
 	path = src/oh-my-opencode
 	url = https://github.com/kano-ai-org/oh-my-opencode.git
-	branch = dev
+	branch = branch_v3.7.1
 	kog-remote-origin-ssh = git@github.com:kano-ai-org/oh-my-opencode.git
 	kog-remote-origin-https = https://github.com/kano-ai-org/oh-my-opencode.git
 	kog-remote-upstream = https://github.com/code-yeongyu/oh-my-opencode.git
