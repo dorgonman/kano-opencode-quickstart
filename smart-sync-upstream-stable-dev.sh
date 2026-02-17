@@ -1,14 +1,17 @@
 #!/usr/bin/env bash
 #
-# smart-sync-origin-latest.sh - Project-level wrapper
+# smart-sync-upstream-stable-dev.sh - Project-level wrapper
 #
-# Checkout origin default branch and pull --rebase (no push).
+# Upstream stable dev flow:
+#   - Create/switch branch from latest stable upstream tag
+#   - Cherry-pick prior fixes from previous stable dev branch
+#   - Push to origin
 
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-SKILL_SCRIPT="$ROOT/skills/kano/kano-git-master-skill/scripts/commit-tools/sync/smart-sync-origin-latest.sh"
+SKILL_SCRIPT="$ROOT/skills/kano/kano-git-master-skill/scripts/commit-tools/sync/smart-sync-stable-dev.sh"
 
 if [[ ! -f "$SKILL_SCRIPT" ]]; then
   echo "ERROR: Git Master Skill script not found at:" >&2

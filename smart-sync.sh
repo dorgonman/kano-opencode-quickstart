@@ -1,12 +1,6 @@
 #!/usr/bin/env bash
 #
 # smart-sync.sh - Project-level entry point for sync workflows
-#
-# This script was split into two explicit workflows:
-#   1) smart-sync-upstream-force-push.sh  - sync with upstream then force-push to origin
-#   2) smart-sync-origin-latest.sh        - sync local default branch to origin (no push)
-#
-# (Legacy) The old AI-powered sync wrapper is kept as smart-sync-ai.sh.
 
 set -euo pipefail
 
@@ -17,15 +11,32 @@ usage() {
 Usage: ./smart-sync.sh <mode> [args...]
 
 Modes:
+  upstream-stable-dev  Stable maintenance branch migration and sync (recommended for release updates)
+  stable-dev           Alias of upstream-stable-dev
+  dev                  Base on upstream default branch and migrate maintenance commits
   upstream-force-push   Sync with upstream, then push --force-with-lease to origin
   origin-latest         Checkout origin default branch and pull --rebase (no push)
-  ai                    Legacy AI-powered sync (no push)
 
 Examples:
   ./smart-sync.sh origin-latest
+  ./smart-sync.sh upstream-stable-dev --target-tag v1.0.0 --base-tag v0.9.9
+  ./smart-sync.sh dev
   ./smart-sync.sh upstream-force-push --verbose
-  ./smart-sync.sh ai --onto upstream/main
 EOF
+}
+
+run_skill_script() {
+  local script_rel="$1"
+  shift || true
+  local script="$ROOT/skills/kano/kano-git-master-skill/scripts/commit-tools/sync/$script_rel"
+  if [[ ! -f "$script" ]]; then
+    echo "ERROR: Git Master Skill script not found at:" >&2
+    echo "  $script" >&2
+    echo "Ensure the kano-git-master-skill submodule is initialized." >&2
+    exit 1
+  fi
+  export KANO_GIT_MASTER_ROOT="$ROOT"
+  exec bash "$script" "$@"
 }
 
 mode="${1:-}"
@@ -36,14 +47,17 @@ fi
 shift || true
 
 case "$mode" in
+  upstream-stable-dev|stable-dev)
+    exec bash "$ROOT/smart-sync-upstream-stable-dev.sh" "$@"
+    ;;
   upstream-force-push)
-    exec bash "$ROOT/smart-sync-upstream-force-push.sh" "$@"
+    run_skill_script "smart-sync-upstream-force-push-copilot.sh" "$@"
     ;;
   origin-latest)
-    exec bash "$ROOT/smart-sync-origin-latest.sh" "$@"
+    run_skill_script "smart-sync-origin-latest.sh" "$@"
     ;;
-  ai)
-    exec bash "$ROOT/smart-sync-ai.sh" "$@"
+  dev)
+    run_skill_script "smart-sync-dev.sh" "$@"
     ;;
   *)
     echo "ERROR: Unknown mode: $mode" >&2
@@ -51,4 +65,3 @@ case "$mode" in
     exit 1
     ;;
 esac
-
