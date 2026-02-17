@@ -18,4 +18,6 @@ if [[ ! -f "$SKILL_SCRIPT" ]]; then
 fi
 
 # Run the actual script
+# Run the actual script (force repo root to project root)
+export KANO_GIT_MASTER_ROOT="$ROOT"
 exec bash "$SKILL_SCRIPT" "$@"
